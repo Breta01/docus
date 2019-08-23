@@ -2,18 +2,22 @@ package com.breta.scannerapp;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.camera.core.CameraX;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.camera.core.Preview;
 import androidx.camera.core.PreviewConfig;
+import androidx.lifecycle.LifecycleOwner;
 
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.Manifest;
 import android.graphics.Matrix;
+import android.util.Rational;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Toast;
 
 
@@ -32,25 +36,39 @@ public class MainActivity extends AppCompatActivity {
         viewFinder = findViewById(R.id.view_finder);
 
         if (allPermissionsGranted()) {
-            viewFinder.post(startCamera());
+            viewFinder.post(new Runnable() {
+                @Override
+                public void run() {
+                    startCamera();
+                }
+            });
         } else {
             ActivityCompat.requestPermissions(
                     this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS);
         }
-
-        viewFinder.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
-            @Override
-            public void onLayoutChange(
-                View v, int left, int top, int right, int bottom,
-                int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                updateTransform();
-            }
-        });
     }
 
     private void startCamera() {
-        PreviewConfig config = new PreviewConfig.Builder().build();
-        Preview preview = new Preview(config);
+        Rational screenAspectRatio = new Rational(viewFinder.getWidth(), viewFinder.getHeight());
+        PreviewConfig previewConfig = new PreviewConfig.Builder()
+                .setTargetAspectRatio(screenAspectRatio)
+                .build();
+        Preview preview = new Preview(previewConfig);
+
+        preview.setOnPreviewOutputUpdateListener(
+            new Preview.OnPreviewOutputUpdateListener() {
+                @Override
+                public void onUpdated(Preview.PreviewOutput output) {
+                    ViewGroup parent = (ViewGroup) viewFinder.getParent();
+                    parent.removeView(viewFinder);
+                    parent.addView(viewFinder, 0);
+
+                    viewFinder.setSurfaceTexture(output.getSurfaceTexture());
+                }
+            }
+        );
+
+        CameraX.bindToLifecycle((LifecycleOwner) this, preview);
     }
 
     @Override
@@ -58,7 +76,12 @@ public class MainActivity extends AppCompatActivity {
             int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == REQUEST_CODE_PERMISSIONS) {
             if (allPermissionsGranted()) {
-                viewFinder.post(startCamera);
+                viewFinder.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        startCamera();
+                    }
+                });
             } else {
                 Toast.makeText(
                     this,
@@ -77,37 +100,5 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         return true;
-    }
-
-    private void updateTransform() {
-        Matrix mx = new Matrix();
-        float w = viewFinder.getMeasuredWidth();
-        float h = viewFinder.getMeasuredHeight();
-
-        float cX = w / 2f;
-        float cY = h / 2f;
-
-        int rotationDgr;
-        int rotation = (int) viewFinder.getRotation();
-
-        switch (rotation) {
-            case Surface.ROTATION_0:
-                rotationDgr = 0;
-                break;
-            case Surface.ROTATION_90:
-                rotationDgr = 90;
-                break;
-            case Surface.ROTATION_180:
-                rotationDgr = 180;
-                break;
-            case Surface.ROTATION_270:
-                rotationDgr = 270;
-                break;
-            default:
-                return;
-        }
-
-        mx.postRotate((float) rotationDgr, cX, cY);
-        viewFinder.setTransform(mx);
     }
 }
