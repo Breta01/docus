@@ -1,4 +1,4 @@
-package com.breta.scannerapp;
+package com.bretahajek.scannerapp;
 
 import android.content.Context;
 

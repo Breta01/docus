@@ -19,7 +19,7 @@ tools:context=".MainActivity">
 
     <ImageButton
         android:id="@+id/capture_button"
-        style="@android:style/Widget.Material.Light.ImageButton"
+        style="@style/Widget.AppCompat.ImageButton"
         android:layout_width="72dp"
         android:layout_height="72dp"
         android:layout_margin="24dp"

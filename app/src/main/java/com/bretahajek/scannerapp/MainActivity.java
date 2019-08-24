@@ -1,24 +1,34 @@
-package com.breta.scannerapp;
+package com.bretahajek.scannerapp;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.core.CameraX;
+import androidx.camera.core.ImageCapture;
+import androidx.camera.core.ImageCaptureConfig;
+import androidx.camera.core.ImageProxy;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.camera.core.Preview;
 import androidx.camera.core.PreviewConfig;
 import androidx.lifecycle.LifecycleOwner;
 
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.media.Image;
 import android.os.Bundle;
 import android.Manifest;
 import android.graphics.Matrix;
+import android.util.Log;
 import android.util.Rational;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.Toast;
+
+import java.io.File;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -31,6 +41,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Intent myIntent = new Intent(this, CameraActivity.class);
+        startActivity(myIntent);
 
 
         viewFinder = findViewById(R.id.view_finder);
@@ -46,6 +59,51 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(
                     this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS);
         }
+    }
+
+    private ImageCapture getImageCapture(Rational aspectRation) {
+        ImageCaptureConfig config = new ImageCaptureConfig.Builder()
+                .setTargetAspectRatio(aspectRation)
+                .setCaptureMode(ImageCapture.CaptureMode.MIN_LATENCY)
+                .build();
+        final ImageCapture imageCapture = new ImageCapture(config);
+
+        ImageButton captureButton = findViewById(R.id.capture_button);
+        captureButton.setOnClickListener(
+            new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    File file = new File(getFilesDir(),  "test.jpg");
+                    imageCapture.takePicture(file,
+                        new ImageCapture.OnImageSavedListener() {
+                            @Override
+                            public void onImageSaved(@NonNull File file) {
+                                String msg = "Image saved successfully.";
+                                Toast.makeText(
+                                        getBaseContext(),
+                                        msg,
+                                        Toast.LENGTH_SHORT).show();
+                                Log.e("ScannerApp", msg);
+                            }
+                            @Override
+                            public void onError(
+                                    @NonNull ImageCapture.UseCaseError useCaseError,
+                                    @NonNull String message,
+                                    Throwable cause) {
+                                String msg = "Saving image failed. Please try again.";
+                                Toast.makeText(
+                                    getBaseContext(),
+                                    msg,
+                                    Toast.LENGTH_SHORT).show();
+                                Log.e("ScannerApp", msg);
+                                Log.e("ScannerApp", message);
+                            }
+                        });
+                }
+            }
+        );
+
+        return imageCapture;
     }
 
     private void startCamera() {
@@ -68,7 +126,9 @@ public class MainActivity extends AppCompatActivity {
             }
         );
 
-        CameraX.bindToLifecycle((LifecycleOwner) this, preview);
+        ImageCapture imageCapture = getImageCapture(screenAspectRatio);
+
+        CameraX.bindToLifecycle(this, preview, imageCapture);
     }
 
     @Override
