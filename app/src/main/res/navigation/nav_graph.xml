@@ -3,11 +3,29 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/cameraFragment">
+    app:startDestination="@id/homeFragment">
 
     <fragment
         android:id="@+id/cameraFragment"
-        android:name="com.bretahajek.scannerapp.CameraFragment"
+        android:name="com.bretahajek.scannerapp.fragments.CameraFragment"
         android:label="fragment_camera"
-        tools:layout="@layout/fragment_camera" />
+        tools:layout="@layout/fragment_camera">
+
+        <action
+            android:id="@+id/action_camera_to_home"
+            app:destination="@id/homeFragment" />
+
+    </fragment>
+
+
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.bretahajek.scannerapp.fragments.HomeFragment"
+        android:label="HomeFragment">
+
+        <action
+            android:id="@+id/action_home_to_camera"
+            app:destination="@+id/cameraFragment" />
+
+    </fragment>
 </navigation>
