@@ -84,7 +84,6 @@ public class CameraFragment extends Fragment {
             );
         }
 
-
         analyzerThread.start();
     }
 
@@ -127,6 +126,7 @@ public class CameraFragment extends Fragment {
         cameraButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                pageSurface.pause();
                 Navigation.findNavController(requireActivity(), R.id.fragment_container).navigate(
                         CameraFragmentDirections.actionCameraToHome()
                 );

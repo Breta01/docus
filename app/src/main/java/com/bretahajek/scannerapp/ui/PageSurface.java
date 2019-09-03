@@ -49,28 +49,27 @@ public class PageSurface extends SurfaceView implements SurfaceHolder.Callback, 
         while (mRunning) {
             if (holder.getSurface().isValid()) {
                 canvas = holder.lockCanvas();
+                if (canvas != null) {
+                    canvas.drawColor(Color.TRANSPARENT);
+                    // Draw lines between corners
+                    if (corners[0] != null) {
+                        path.moveTo(corners[0].x, corners[0].y);
+                        for (int i = 1; i < 4; i++)
+                            path.lineTo(corners[i].x, corners[i].y);
+                        path.close();
+                        canvas.drawPath(path, paint);
+                    }
 
-                canvas.drawColor(Color.TRANSPARENT);
-                // Draw lines between corners
-                if (corners[0] != null) {
-                    path.moveTo(corners[0].x, corners[0].y);
-                    for (int i = 1; i < 4; i++)
-                        path.lineTo(corners[i].x, corners[i].y);
-                    path.close();
-                    canvas.drawPath(path, paint);
+                    path.rewind();
+                    holder.unlockCanvasAndPost(canvas);
                 }
-
-                path.rewind();
-                holder.unlockCanvasAndPost(canvas);
             }
         }
     }
 
     @Override
     public void surfaceCreated(SurfaceHolder surfaceHolder) {
-        mRunning = true;
-        mThread = new Thread(this);
-        mThread.start();
+        resume();
     }
 
     @Override
@@ -83,10 +82,20 @@ public class PageSurface extends SurfaceView implements SurfaceHolder.Callback, 
 
     @Override
     public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
+        pause();
+    }
+
+    public void pause() {
         mRunning = false;
         try {
             mThread.join();
         } catch (InterruptedException e) {
         }
+    }
+
+    public void resume() {
+        mRunning = true;
+        mThread = new Thread(this);
+        mThread.start();
     }
 }
