@@ -1,0 +1,32 @@
+package com.bretahajek.scannerapp;
+
+import android.os.Bundle;
+import android.util.Log;
+import android.view.TextureView;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.bretahajek.scannerapp.fragments.CameraFragment;
+
+import org.opencv.android.OpenCVLoader;
+
+
+public class MainActivity extends AppCompatActivity implements
+        CameraFragment.OnFragmentInteractionListener {
+    private TextureView viewFinder;
+
+    static {
+        if (!OpenCVLoader.initDebug()) {
+            Log.e("ERROR", "Unable to load OpenCV");
+        } else {
+            Log.d("SUCCESS", "OpenCV loaded");
+        }
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+    }
+}
