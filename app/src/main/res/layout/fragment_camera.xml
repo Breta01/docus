@@ -9,7 +9,7 @@
     android:theme="@style/FullscreenTheme">
 
     <Button
-        android:id="@+id/button"
+        android:id="@+id/button_back_home"
         style="@style/Widget.AppCompat.Button.Borderless"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -40,5 +40,10 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <com.bretahajek.scannerapp.ui.PageSurface
+        android:id="@+id/page_surface"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

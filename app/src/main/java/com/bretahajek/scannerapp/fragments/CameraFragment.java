@@ -3,6 +3,7 @@ package com.bretahajek.scannerapp.fragments;
 import android.app.ActionBar;
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
 import android.media.Image;
 import android.os.Build;
@@ -16,6 +17,7 @@ import android.view.LayoutInflater;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
@@ -33,6 +35,7 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
 import com.bretahajek.scannerapp.R;
+import com.bretahajek.scannerapp.ui.PageSurface;
 
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
@@ -46,6 +49,7 @@ public class CameraFragment extends Fragment {
     private static int IMMERSIVE_FLAG_TIMEOUT = 300;
     private OnFragmentInteractionListener callback;
     private TextureView viewFinder;
+    private PageSurface pageSurface;
     private ConstraintLayout container;
     private HandlerThread analyzerThread = new HandlerThread("PageAnalysis");
     private Runnable immersiveModeRunnable = new Runnable() {
@@ -79,6 +83,7 @@ public class CameraFragment extends Fragment {
                     CameraFragmentDirections.actionCameraToHome()
             );
         }
+
 
         analyzerThread.start();
     }
@@ -117,6 +122,18 @@ public class CameraFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         container = (ConstraintLayout) view;
         container.post(immersiveModeRunnable);
+
+        Button cameraButton = view.findViewById(R.id.button_back_home);
+        cameraButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Navigation.findNavController(requireActivity(), R.id.fragment_container).navigate(
+                        CameraFragmentDirections.actionCameraToHome()
+                );
+            }
+        });
+
+        pageSurface = (PageSurface) container.getViewById(R.id.page_surface);
 
         viewFinder = (TextureView) container.getViewById(R.id.view_finder);
         viewFinder.post(new Runnable() {
@@ -250,6 +267,13 @@ public class CameraFragment extends Fragment {
 
         @Override
         public void analyze(ImageProxy image, int rotationDegrees) {
+            Point[] points = new Point[4];
+            points[0] = new Point(100, 100);
+            points[1] = new Point(500, 100);
+            points[2] = new Point(500, 500);
+            points[3] = new Point(300, 500);
+
+            pageSurface.updateCorners(points);
             Log.d("ROTATION", Integer.toString(rotationDegrees));
             Mat mat = imageToMat(image.getImage());
             Log.d("SHAPE", Integer.toString(mat.rows())); // NEFUNGUJE
