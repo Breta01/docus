@@ -6,10 +6,11 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PixelFormat;
-import android.graphics.Point;
 import android.util.AttributeSet;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+
+import org.opencv.core.Point;
 
 public class PageSurface extends SurfaceView implements SurfaceHolder.Callback, Runnable {
     private final Paint paint;
@@ -50,12 +51,13 @@ public class PageSurface extends SurfaceView implements SurfaceHolder.Callback, 
             if (holder.getSurface().isValid()) {
                 canvas = holder.lockCanvas();
                 if (canvas != null) {
+                    // TODO: Re-draw doesn't work
                     canvas.drawColor(Color.TRANSPARENT);
                     // Draw lines between corners
                     if (corners[0] != null) {
-                        path.moveTo(corners[0].x, corners[0].y);
+                        path.moveTo((int) corners[0].x, (int) corners[0].y);
                         for (int i = 1; i < 4; i++)
-                            path.lineTo(corners[i].x, corners[i].y);
+                            path.lineTo((int) corners[i].x, (int) corners[i].y);
                         path.close();
                         canvas.drawPath(path, paint);
                     }

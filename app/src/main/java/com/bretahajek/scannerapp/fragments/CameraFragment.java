@@ -3,9 +3,7 @@ package com.bretahajek.scannerapp.fragments;
 import android.app.ActionBar;
 import android.content.Context;
 import android.graphics.Color;
-import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
-import android.media.Image;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -35,11 +33,13 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
 import com.bretahajek.scannerapp.R;
+import com.bretahajek.scannerapp.ocr.PageDetector;
 import com.bretahajek.scannerapp.ui.PageSurface;
 
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.core.MatOfByte;
-import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.core.Point;
+import org.opencv.imgproc.Imgproc;
 
 import java.io.File;
 import java.nio.ByteBuffer;
@@ -255,28 +255,49 @@ public class CameraFragment extends Fragment {
     }
 
     private class PageAnalyzer implements ImageAnalysis.Analyzer {
-        private Mat imageToMat(Image image) {
-            ByteBuffer bb = image.getPlanes()[0].getBuffer();
-            byte[] buf = new byte[bb.remaining()];
-            bb.get(buf);
+        private Mat imageToMat(ImageProxy image) {
+            ImageProxy.PlaneProxy[] planes = image.getPlanes();
+            int height = image.getHeight();
+            int width = image.getWidth();
+            // Get YUV channels
+            ByteBuffer yBuffer = planes[0].getBuffer();
+            ByteBuffer uBuffer = planes[1].getBuffer();
+            ByteBuffer vBuffer = planes[2].getBuffer();
 
-            Mat mat = Imgcodecs.imdecode(new MatOfByte(buf), Imgcodecs.IMREAD_UNCHANGED);
-            return mat;
+            int ySize = yBuffer.remaining();
+            int uSize = uBuffer.remaining();
+            int vSize = vBuffer.remaining();
 
+            byte[] data = new byte[ySize + uSize + vSize];
+
+            yBuffer.get(data, 0, ySize);
+            uBuffer.get(data, ySize, uSize);
+            vBuffer.get(data, ySize + uSize, vSize);
+
+            Mat yuvMat = new Mat(height + (height / 2), width, CvType.CV_8UC1);
+            yuvMat.put(0, 0, data);
+            Mat rgbMat = new Mat(height, width, CvType.CV_8UC3);
+            Imgproc.cvtColor(yuvMat, rgbMat, Imgproc.COLOR_YUV2RGB_I420, 3);
+            yuvMat.release();
+            return rgbMat;
         }
 
         @Override
         public void analyze(ImageProxy image, int rotationDegrees) {
-            Point[] points = new Point[4];
-            points[0] = new Point(100, 100);
-            points[1] = new Point(500, 100);
-            points[2] = new Point(500, 500);
-            points[3] = new Point(300, 500);
 
-            pageSurface.updateCorners(points);
-            Log.d("ROTATION", Integer.toString(rotationDegrees));
-            Mat mat = imageToMat(image.getImage());
-            Log.d("SHAPE", Integer.toString(mat.rows())); // NEFUNGUJE
+            if (image.getFormat() == 35 && image.getPlanes()[0].getPixelStride() == 1) {
+                Mat matImage = imageToMat(image);
+                Point[] corners = PageDetector.getPageCorners(matImage).toArray();
+                pageSurface.updateCorners(corners);
+
+                Log.d("ROTATION", Integer.toString(rotationDegrees));
+                Log.d("Height Img", Integer.toString(image.getHeight()));
+                Log.d("Width Img", Integer.toString(image.getWidth()));
+                Log.d("Mat width", Integer.toString(matImage.width()));
+                Log.d("Mat height", Integer.toString(matImage.height()));
+                Log.d("Mat rows", Integer.toString(matImage.rows()));
+                Log.d("Mat cols", Integer.toString(matImage.cols()));
+            }
         }
     }
 
