@@ -8,6 +8,7 @@ import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
+import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
@@ -39,7 +40,9 @@ public class PageDetector {
 
     // TODO: Rotate image
     public static Mat getPage(Mat image) {
-        MatOfPoint pageContour = getPageCorners(image);
+        Mat grayImage = new Mat();
+        Imgproc.cvtColor(image, grayImage, Imgproc.COLOR_BGR2GRAY);
+        MatOfPoint pageContour = getPageCorners(grayImage);
         return perspTransform(image, pageContour);
     }
 
@@ -56,18 +59,11 @@ public class PageDetector {
 
         MatOfPoint pageContour = findPageContour(imageEdges, smallImage);
 
-        // TODO: Find better MatOfPoint multiplication
-        Point[] cnt = pageContour.toArray();
-        for (Point p : cnt) {
-            p.x *= ratio;
-            p.y *= ratio;
-        }
-        return new MatOfPoint(cnt);
+        Core.multiply(pageContour, new Scalar(ratio, ratio), pageContour);
+        return pageContour;
     }
 
     private static Mat edges(Mat image, double minVal, double maxVal) {
-        Imgproc.cvtColor(image, image, Imgproc.COLOR_BGR2GRAY);
-
         Mat tmpImage = new Mat();
         Imgproc.bilateralFilter(image, tmpImage,
                 BF_diameter,

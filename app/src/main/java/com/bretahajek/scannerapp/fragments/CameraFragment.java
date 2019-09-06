@@ -39,7 +39,6 @@ import com.bretahajek.scannerapp.ui.PageSurface;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
-import org.opencv.imgproc.Imgproc;
 
 import java.io.File;
 import java.nio.ByteBuffer;
@@ -255,48 +254,42 @@ public class CameraFragment extends Fragment {
     }
 
     private class PageAnalyzer implements ImageAnalysis.Analyzer {
-        private Mat imageToMat(ImageProxy image) {
-            ImageProxy.PlaneProxy[] planes = image.getPlanes();
+        private Mat imageToGrayscaleMat(ImageProxy image) {
+            ImageProxy.PlaneProxy plane = image.getPlanes()[0];
             int height = image.getHeight();
             int width = image.getWidth();
-            // Get YUV channels
-            ByteBuffer yBuffer = planes[0].getBuffer();
-            ByteBuffer uBuffer = planes[1].getBuffer();
-            ByteBuffer vBuffer = planes[2].getBuffer();
+            // Get Y channel
+            ByteBuffer yBuffer = plane.getBuffer();
 
             int ySize = yBuffer.remaining();
-            int uSize = uBuffer.remaining();
-            int vSize = vBuffer.remaining();
 
-            byte[] data = new byte[ySize + uSize + vSize];
+            byte[] data = new byte[ySize];
 
             yBuffer.get(data, 0, ySize);
-            uBuffer.get(data, ySize, uSize);
-            vBuffer.get(data, ySize + uSize, vSize);
-
-            Mat yuvMat = new Mat(height + (height / 2), width, CvType.CV_8UC1);
-            yuvMat.put(0, 0, data);
-            Mat rgbMat = new Mat(height, width, CvType.CV_8UC3);
-            Imgproc.cvtColor(yuvMat, rgbMat, Imgproc.COLOR_YUV2RGB_I420, 3);
-            yuvMat.release();
-            return rgbMat;
+            Mat grayMat = new Mat(height, width, CvType.CV_8UC1);
+            grayMat.put(0, 0, data);
+            return grayMat;
         }
 
         @Override
         public void analyze(ImageProxy image, int rotationDegrees) {
 
             if (image.getFormat() == 35 && image.getPlanes()[0].getPixelStride() == 1) {
-                Mat matImage = imageToMat(image);
+                Mat matImage = imageToGrayscaleMat(image);
                 Point[] corners = PageDetector.getPageCorners(matImage).toArray();
                 pageSurface.updateCorners(corners);
 
+                for (Point p : corners) {
+                    Log.d("Point", p.toString());
+                }
+
                 Log.d("ROTATION", Integer.toString(rotationDegrees));
-                Log.d("Height Img", Integer.toString(image.getHeight()));
-                Log.d("Width Img", Integer.toString(image.getWidth()));
-                Log.d("Mat width", Integer.toString(matImage.width()));
-                Log.d("Mat height", Integer.toString(matImage.height()));
-                Log.d("Mat rows", Integer.toString(matImage.rows()));
-                Log.d("Mat cols", Integer.toString(matImage.cols()));
+//                Log.d("Height Img", Integer.toString(image.getHeight()));
+//                Log.d("Width Img", Integer.toString(image.getWidth()));
+//                Log.d("Mat width", Integer.toString(matImage.width()));
+//                Log.d("Mat height", Integer.toString(matImage.height()));
+//                Log.d("Mat rows", Integer.toString(matImage.rows()));
+//                Log.d("Mat cols", Integer.toString(matImage.cols()));
             }
         }
     }

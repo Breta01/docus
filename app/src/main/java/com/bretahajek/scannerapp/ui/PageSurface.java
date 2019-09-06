@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PixelFormat;
+import android.graphics.PorterDuff;
 import android.util.AttributeSet;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -51,8 +52,7 @@ public class PageSurface extends SurfaceView implements SurfaceHolder.Callback, 
             if (holder.getSurface().isValid()) {
                 canvas = holder.lockCanvas();
                 if (canvas != null) {
-                    // TODO: Re-draw doesn't work
-                    canvas.drawColor(Color.TRANSPARENT);
+                    canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.MULTIPLY);
                     // Draw lines between corners
                     if (corners[0] != null) {
                         path.moveTo((int) corners[0].x, (int) corners[0].y);
