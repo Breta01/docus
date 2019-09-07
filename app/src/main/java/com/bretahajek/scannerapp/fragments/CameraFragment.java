@@ -3,9 +3,7 @@ package com.bretahajek.scannerapp.fragments;
 import android.app.ActionBar;
 import android.content.Context;
 import android.graphics.Color;
-import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
-import android.media.Image;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -35,11 +33,15 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
 import com.bretahajek.scannerapp.R;
+import com.bretahajek.scannerapp.ocr.PageDetector;
 import com.bretahajek.scannerapp.ui.PageSurface;
 
+import org.opencv.core.Core;
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.core.MatOfByte;
-import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.core.MatOfPoint;
+import org.opencv.core.MatOfPoint2f;
+import org.opencv.core.Scalar;
 
 import java.io.File;
 import java.nio.ByteBuffer;
@@ -100,6 +102,12 @@ public class CameraFragment extends Fragment {
     }
 
     @Override
+    public void onPause() {
+        super.onPause();
+        pageSurface.pause();
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_camera, container, false);
@@ -145,13 +153,15 @@ public class CameraFragment extends Fragment {
     }
 
     private void startCamera() {
+        CameraX.unbindAll();
+
         DisplayMetrics metrics = new DisplayMetrics();
         viewFinder.getDisplay().getRealMetrics(metrics);
         Rational screenAspectRatio = new Rational(metrics.widthPixels, metrics.heightPixels);
+
         PreviewConfig previewConfig = new PreviewConfig.Builder()
                 .setTargetAspectRatio(screenAspectRatio)
                 .build();
-        // @TODO: Add on layout change listener
         Preview preview = new Preview(previewConfig);
 
         preview.setOnPreviewOutputUpdateListener(
@@ -255,28 +265,45 @@ public class CameraFragment extends Fragment {
     }
 
     private class PageAnalyzer implements ImageAnalysis.Analyzer {
-        private Mat imageToMat(Image image) {
-            ByteBuffer bb = image.getPlanes()[0].getBuffer();
-            byte[] buf = new byte[bb.remaining()];
-            bb.get(buf);
-
-            Mat mat = Imgcodecs.imdecode(new MatOfByte(buf), Imgcodecs.IMREAD_UNCHANGED);
-            return mat;
-
+        private Mat imageToGrayscaleMat(ImageProxy image) {
+            ImageProxy.PlaneProxy plane = image.getPlanes()[0];
+            int height = image.getHeight();
+            int width = image.getWidth();
+            // Get Y channel - gray
+            ByteBuffer yBuffer = plane.getBuffer();
+            return new Mat(height, width, CvType.CV_8UC1, yBuffer);
         }
 
         @Override
         public void analyze(ImageProxy image, int rotationDegrees) {
-            Point[] points = new Point[4];
-            points[0] = new Point(100, 100);
-            points[1] = new Point(500, 100);
-            points[2] = new Point(500, 500);
-            points[3] = new Point(300, 500);
+            if (image.getFormat() == 35 && image.getPlanes()[0].getPixelStride() == 1) {
+                Mat matImage = imageToGrayscaleMat(image);
+                if (rotationDegrees != 0) {
+                    int rotate;
+                    switch (rotationDegrees) {
+                        case 90:
+                            rotate = Core.ROTATE_90_CLOCKWISE;
+                            break;
+                        case 180:
+                            rotate = Core.ROTATE_180;
+                            break;
+                        case 270:
+                            rotate = Core.ROTATE_90_COUNTERCLOCKWISE;
+                            break;
+                    }
+                    Core.rotate(matImage, matImage, Core.ROTATE_90_CLOCKWISE);
+                }
 
-            pageSurface.updateCorners(points);
-            Log.d("ROTATION", Integer.toString(rotationDegrees));
-            Mat mat = imageToMat(image.getImage());
-            Log.d("SHAPE", Integer.toString(mat.rows())); // NEFUNGUJE
+                MatOfPoint corners = PageDetector.getPageCorners(matImage);
+                MatOfPoint2f relCorners = new MatOfPoint2f();
+                corners.convertTo(relCorners, CvType.CV_32F);
+                Core.multiply(
+                        relCorners,
+                        new Scalar(1 / (float) matImage.cols(), 1 / (float) matImage.rows()),
+                        relCorners);
+
+                pageSurface.updateCorners(relCorners.toArray());
+            }
         }
     }
 
