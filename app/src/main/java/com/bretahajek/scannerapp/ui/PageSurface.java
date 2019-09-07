@@ -81,10 +81,16 @@ public class PageSurface extends SurfaceView implements SurfaceHolder.Callback, 
                         canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.MULTIPLY);
                         // Draw lines between corners
                         if (corners[0] != null) {
-                            path.moveTo((int) (corners[0].x * viewWidth), (int) (corners[0].y * viewHeight));
+                            path.moveTo(
+                                    (int) (corners[0].x * viewWidth),
+                                    (int) (corners[0].y * viewHeight));
+
                             for (int i = 1; i < 4; i++)
-                                path.lineTo((int) (corners[i].x * viewWidth), (int) (corners[i].y * viewHeight));
+                                path.lineTo(
+                                        (int) (corners[i].x * viewWidth),
+                                        (int) (corners[i].y * viewHeight));
                             path.close();
+
                             canvas.drawPath(path, paint);
                         }
                         path.rewind();
@@ -126,11 +132,11 @@ public class PageSurface extends SurfaceView implements SurfaceHolder.Callback, 
         mRunning = true;
         mThread = new Thread(this);
         mThread.start();
-
         corners = new Point[]{
                 new Point(0, 0),
                 new Point(0, 1.0),
                 new Point(1.0, 1.0),
                 new Point(1.0, 0)};
+        targetCorners = null;
     }
 }

@@ -32,14 +32,11 @@ public class PageDetector {
     private static int MB_ksize = 11;
     private static Size ME_kernel = new Size(11, 5);
     private static int borderSize = 5;
-    private Mat orgImage = new Mat();
-    private Mat resImage = new Mat();
 
 
     public PageDetector() {
     }
 
-    // TODO: Rotate image
     public static Mat getPage(Mat image) {
         Mat grayImage = new Mat();
         Imgproc.cvtColor(image, grayImage, Imgproc.COLOR_BGR2GRAY);

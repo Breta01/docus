@@ -41,7 +41,6 @@ import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
-import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 
 import java.io.File;
@@ -87,7 +86,7 @@ public class CameraFragment extends Fragment {
             );
         }
 
-//        analyzerThread.start();
+        analyzerThread.start();
     }
 
     @Override
@@ -100,15 +99,12 @@ public class CameraFragment extends Fragment {
                     CameraFragmentDirections.actionCameraToHome()
             );
         }
-
-        analyzerThread.start();
     }
 
     @Override
     public void onPause() {
         super.onPause();
         pageSurface.pause();
-        analyzerThread.quit();
     }
 
     @Override
@@ -166,7 +162,6 @@ public class CameraFragment extends Fragment {
         PreviewConfig previewConfig = new PreviewConfig.Builder()
                 .setTargetAspectRatio(screenAspectRatio)
                 .build();
-        // @TODO: Add on layout change listener
         Preview preview = new Preview(previewConfig);
 
         preview.setOnPreviewOutputUpdateListener(
@@ -274,7 +269,7 @@ public class CameraFragment extends Fragment {
             ImageProxy.PlaneProxy plane = image.getPlanes()[0];
             int height = image.getHeight();
             int width = image.getWidth();
-            // Get Y channel
+            // Get Y channel - gray
             ByteBuffer yBuffer = plane.getBuffer();
             return new Mat(height, width, CvType.CV_8UC1, yBuffer);
         }
@@ -306,10 +301,6 @@ public class CameraFragment extends Fragment {
                         relCorners,
                         new Scalar(1 / (float) matImage.cols(), 1 / (float) matImage.rows()),
                         relCorners);
-
-                for (Point p : relCorners.toArray()) {
-                    Log.d("POINT", p.toString());
-                }
 
                 pageSurface.updateCorners(relCorners.toArray());
             }
