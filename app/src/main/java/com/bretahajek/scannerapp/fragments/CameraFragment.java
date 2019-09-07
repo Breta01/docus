@@ -36,9 +36,13 @@ import com.bretahajek.scannerapp.R;
 import com.bretahajek.scannerapp.ocr.PageDetector;
 import com.bretahajek.scannerapp.ui.PageSurface;
 
+import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint;
+import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
+import org.opencv.core.Scalar;
 
 import java.io.File;
 import java.nio.ByteBuffer;
@@ -83,7 +87,7 @@ public class CameraFragment extends Fragment {
             );
         }
 
-        analyzerThread.start();
+//        analyzerThread.start();
     }
 
     @Override
@@ -96,6 +100,15 @@ public class CameraFragment extends Fragment {
                     CameraFragmentDirections.actionCameraToHome()
             );
         }
+
+        analyzerThread.start();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        pageSurface.pause();
+        analyzerThread.quit();
     }
 
     @Override
@@ -144,9 +157,12 @@ public class CameraFragment extends Fragment {
     }
 
     private void startCamera() {
+        CameraX.unbindAll();
+
         DisplayMetrics metrics = new DisplayMetrics();
         viewFinder.getDisplay().getRealMetrics(metrics);
         Rational screenAspectRatio = new Rational(metrics.widthPixels, metrics.heightPixels);
+
         PreviewConfig previewConfig = new PreviewConfig.Builder()
                 .setTargetAspectRatio(screenAspectRatio)
                 .build();
@@ -260,36 +276,42 @@ public class CameraFragment extends Fragment {
             int width = image.getWidth();
             // Get Y channel
             ByteBuffer yBuffer = plane.getBuffer();
-
-            int ySize = yBuffer.remaining();
-
-            byte[] data = new byte[ySize];
-
-            yBuffer.get(data, 0, ySize);
-            Mat grayMat = new Mat(height, width, CvType.CV_8UC1);
-            grayMat.put(0, 0, data);
-            return grayMat;
+            return new Mat(height, width, CvType.CV_8UC1, yBuffer);
         }
 
         @Override
         public void analyze(ImageProxy image, int rotationDegrees) {
-
             if (image.getFormat() == 35 && image.getPlanes()[0].getPixelStride() == 1) {
                 Mat matImage = imageToGrayscaleMat(image);
-                Point[] corners = PageDetector.getPageCorners(matImage).toArray();
-                pageSurface.updateCorners(corners);
-
-                for (Point p : corners) {
-                    Log.d("Point", p.toString());
+                if (rotationDegrees != 0) {
+                    int rotate;
+                    switch (rotationDegrees) {
+                        case 90:
+                            rotate = Core.ROTATE_90_CLOCKWISE;
+                            break;
+                        case 180:
+                            rotate = Core.ROTATE_180;
+                            break;
+                        case 270:
+                            rotate = Core.ROTATE_90_COUNTERCLOCKWISE;
+                            break;
+                    }
+                    Core.rotate(matImage, matImage, Core.ROTATE_90_CLOCKWISE);
                 }
 
-                Log.d("ROTATION", Integer.toString(rotationDegrees));
-//                Log.d("Height Img", Integer.toString(image.getHeight()));
-//                Log.d("Width Img", Integer.toString(image.getWidth()));
-//                Log.d("Mat width", Integer.toString(matImage.width()));
-//                Log.d("Mat height", Integer.toString(matImage.height()));
-//                Log.d("Mat rows", Integer.toString(matImage.rows()));
-//                Log.d("Mat cols", Integer.toString(matImage.cols()));
+                MatOfPoint corners = PageDetector.getPageCorners(matImage);
+                MatOfPoint2f relCorners = new MatOfPoint2f();
+                corners.convertTo(relCorners, CvType.CV_32F);
+                Core.multiply(
+                        relCorners,
+                        new Scalar(1 / (float) matImage.cols(), 1 / (float) matImage.rows()),
+                        relCorners);
+
+                for (Point p : relCorners.toArray()) {
+                    Log.d("POINT", p.toString());
+                }
+
+                pageSurface.updateCorners(relCorners.toArray());
             }
         }
     }

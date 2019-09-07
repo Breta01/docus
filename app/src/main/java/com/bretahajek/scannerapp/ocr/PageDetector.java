@@ -19,8 +19,9 @@ import java.util.List;
 
 
 public class PageDetector {
+    public static final int SMALL_HEIGHT = 800;
+
     private static final String TAG = "PageDetector";
-    private static final int SMALL_HEIGHT = 800;
     private static int E_min = 200;
     private static int E_max = 250;
     private static int BF_diameter = 9;

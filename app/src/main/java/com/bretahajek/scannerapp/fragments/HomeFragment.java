@@ -49,7 +49,6 @@ public class HomeFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_home, container, false);
     }
 
@@ -77,7 +76,7 @@ public class HomeFragment extends Fragment {
             if (!allPermissionsGranted(requireContext())) {
                 Toast.makeText(
                         requireContext(),
-                        "Permissions not granted. Application may not work properly",
+                        getString(R.string.permission_notgranted),
                         Toast.LENGTH_SHORT).show();
             }
         }

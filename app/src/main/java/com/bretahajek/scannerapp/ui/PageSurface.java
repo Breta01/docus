@@ -20,10 +20,16 @@ public class PageSurface extends SurfaceView implements SurfaceHolder.Callback, 
     private final Context context;
     private boolean mRunning;
     private Thread mThread = null;
-    private Point[] corners = new Point[4];
     private int viewWidth;
     private int viewHeight;
 
+    private double velocity = 0.007;
+    private Point[] targetCorners;
+    private Point[] corners = new Point[]{
+            new Point(0, 0),
+            new Point(0, 1.0),
+            new Point(1.0, 1.0),
+            new Point(1.0, 0)};
 
     public PageSurface(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -42,7 +48,25 @@ public class PageSurface extends SurfaceView implements SurfaceHolder.Callback, 
     }
 
     public void updateCorners(Point[] points) {
-        corners = points;
+        targetCorners = points;
+    }
+
+    private void moveCorners() {
+        if (targetCorners != null) {
+            for (int i = 0; i < 4; i++) {
+                if (corners[i].x != targetCorners[i].x) {
+                    int xDir = (corners[i].x > targetCorners[i].x) ? -1 : 1;
+                    corners[i].x = Math.abs(Math.min(
+                            xDir * (corners[i].x + xDir * velocity), xDir * targetCorners[i].x));
+                }
+
+                if (corners[i].y != targetCorners[i].y) {
+                    int yDir = (corners[i].y > targetCorners[i].y) ? -1 : 1;
+                    corners[i].y = Math.abs(Math.min(
+                            yDir * (corners[i].y + yDir * velocity), yDir * targetCorners[i].y));
+                }
+            }
+        }
     }
 
     @Override
@@ -52,17 +76,20 @@ public class PageSurface extends SurfaceView implements SurfaceHolder.Callback, 
             if (holder.getSurface().isValid()) {
                 canvas = holder.lockCanvas();
                 if (canvas != null) {
-                    canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.MULTIPLY);
-                    // Draw lines between corners
-                    if (corners[0] != null) {
-                        path.moveTo((int) corners[0].x, (int) corners[0].y);
-                        for (int i = 1; i < 4; i++)
-                            path.lineTo((int) corners[i].x, (int) corners[i].y);
-                        path.close();
-                        canvas.drawPath(path, paint);
+                    synchronized (holder) {
+                        // Clean previous canvas
+                        canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.MULTIPLY);
+                        // Draw lines between corners
+                        if (corners[0] != null) {
+                            path.moveTo((int) (corners[0].x * viewWidth), (int) (corners[0].y * viewHeight));
+                            for (int i = 1; i < 4; i++)
+                                path.lineTo((int) (corners[i].x * viewWidth), (int) (corners[i].y * viewHeight));
+                            path.close();
+                            canvas.drawPath(path, paint);
+                        }
+                        path.rewind();
+                        moveCorners();
                     }
-
-                    path.rewind();
                     holder.unlockCanvasAndPost(canvas);
                 }
             }
@@ -99,5 +126,11 @@ public class PageSurface extends SurfaceView implements SurfaceHolder.Callback, 
         mRunning = true;
         mThread = new Thread(this);
         mThread.start();
+
+        corners = new Point[]{
+                new Point(0, 0),
+                new Point(0, 1.0),
+                new Point(1.0, 1.0),
+                new Point(1.0, 0)};
     }
 }
