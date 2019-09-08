@@ -5,4 +5,6 @@
     <string name="image_save_success">Image saved successfully.</string>
 
     <string name="permission_notgranted">Permissions not granted. Application may not work properly</string>
+    <string name="scanned_image">Scanned Image</string>
+    <string name="doc_name_hint">Document Name</string>
 </resources>

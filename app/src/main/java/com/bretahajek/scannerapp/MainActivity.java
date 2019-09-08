@@ -6,13 +6,10 @@ import android.view.TextureView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.bretahajek.scannerapp.fragments.CameraFragment;
-
 import org.opencv.android.OpenCVLoader;
 
 
-public class MainActivity extends AppCompatActivity implements
-        CameraFragment.OnFragmentInteractionListener {
+public class MainActivity extends AppCompatActivity {
     private TextureView viewFinder;
 
     static {
