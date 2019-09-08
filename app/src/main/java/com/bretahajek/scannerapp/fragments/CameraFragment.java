@@ -56,8 +56,8 @@ public class CameraFragment extends Fragment {
     private ConstraintLayout container;
     private String documentName;
     private ImageCapture imageCapture = null;
-    private HandlerThread analyzerThread = new HandlerThread("PageAnalysis");
     private ImageAnalysis imageAnalyzer = null;
+    private HandlerThread analyzerThread = new HandlerThread("PageAnalysis");
     private Runnable immersiveModeRunnable = new Runnable() {
         @Override
         public void run() {
@@ -237,7 +237,7 @@ public class CameraFragment extends Fragment {
                     public void onClick(View v) {
                         File file = new File(
                                 getActivity().getExternalFilesDir(null),
-                                "tmpImage.jpg");
+                                "tmp.jpg");
                         Log.i(
                                 getString(R.string.app_name),
                                 "Saving to: " + file.getAbsolutePath());
