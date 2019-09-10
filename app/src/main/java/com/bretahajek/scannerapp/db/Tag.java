@@ -18,8 +18,8 @@ public class Tag {
     @ColumnInfo(name = "document_count")
     public int documentCount;
 
-    public Tag(final String name) {
+    public Tag(final String name, final int documentCount) {
         this.name = name;
-        this.documentCount = 0;
+        this.documentCount = documentCount;
     }
 }

@@ -19,16 +19,19 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
 import com.bretahajek.scannerapp.R;
+import com.bretahajek.scannerapp.db.AppDatabase;
 import com.bretahajek.scannerapp.ocr.PageDetector;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
+import org.apache.commons.io.FileUtils;
 import org.opencv.android.Utils;
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.Normalizer;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -41,6 +44,7 @@ public class ScanPreviewFragment extends Fragment {
     // TODO: Check if image saved before moving
     private boolean imageReady = false;
     private AlertDialog dialog;
+    private AppDatabase database;
 
 
     public ScanPreviewFragment() {
@@ -55,6 +59,8 @@ public class ScanPreviewFragment extends Fragment {
 
         // Run cropping in background
         new asyncScanPreview().execute(imagePath);
+
+        database = AppDatabase.getInstance(requireContext());
     }
 
     @Override
@@ -93,7 +99,7 @@ public class ScanPreviewFragment extends Fragment {
                 builder.setMessage("Unable to create document, please try different name.");
             }
         } else {
-            builder.setTitle(documentName);
+            builder.setTitle("Document: " + documentName);
             builder.setMessage("Adding the new page to the document.");
         }
 
@@ -162,8 +168,10 @@ public class ScanPreviewFragment extends Fragment {
         dialog.getWindow().setDimAmount(0.0f);
         dialog.setCanceledOnTouchOutside(false);
         dialog.show();
-        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
-        dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setEnabled(false);
+        if (documentName == null) {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
+            dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setEnabled(false);
+        }
     }
 
     private String stringToDirectory(String s) {
@@ -180,14 +188,38 @@ public class ScanPreviewFragment extends Fragment {
         // TODO: if document in databes doesnt exist
         // Create db entry + create folder, count pages, move image to folder, rename image
         // Wait for image to be saved
-        String documentString = stringToDirectory(documentName);
-        File documentDir = new File(getActivity().getExternalFilesDir(null), documentString);
+//        Document document = database.documentDao().findByName(documentName);
+        String document = null;
+        if (document != null) {
+            Log.i("Exists", "Document exists");
+        } else {
+            String documentString = stringToDirectory(documentName);
+            File documentDir = new File(
+                    getActivity().getExternalFilesDir(null), documentString);
 
-        if (!documentDir.exists() && !documentDir.mkdirs()) {
-            Log.e("ScanPreviewFragment", "Unable to create the document.");
-            return false;
+
+            if (!documentDir.exists() && !documentDir.mkdirs()) {
+                Log.e("ScanPreviewFragment", "Unable to create the document.");
+                return false;
+            }
+
+            // Move outside of if
+            while (!imageReady) {
+                try {
+                    Thread.sleep(200);
+                } catch (Exception e) {
+                }
+            }
+            File sourceFile = new File(imagePath);
+            File dstFile = new File(documentDir, Integer.toString(1) + ".jpg");
+            try {
+                FileUtils.moveFile(sourceFile, dstFile);
+            } catch (IOException e) {
+                Log.e("ScanPreviewFragment", "Unable to save file.");
+                return false;
+            }
         }
-
+        // Create document entry
 
         return true;
     }
@@ -204,13 +236,14 @@ public class ScanPreviewFragment extends Fragment {
         @Override
         protected Void doInBackground(String... paths) {
             Mat image = Imgcodecs.imread(paths[0]);
+            Mat rgbImage = Mat.zeros(image.size(), image.type());
 
             image = PageDetector.getPage(image);
 
-            Imgproc.cvtColor(image, image, Imgproc.COLOR_BGR2RGB);
+            Imgproc.cvtColor(image, rgbImage, Imgproc.COLOR_BGR2RGB);
             Bitmap bitmap = Bitmap.createBitmap(
-                    image.cols(), image.rows(), Bitmap.Config.ARGB_8888);
-            Utils.matToBitmap(image, bitmap);
+                    rgbImage.cols(), rgbImage.rows(), Bitmap.Config.ARGB_8888);
+            Utils.matToBitmap(rgbImage, bitmap);
             publishProgress(bitmap);
 
             // Display image then save

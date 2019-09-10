@@ -26,4 +26,8 @@ public abstract class AppDatabase extends RoomDatabase {
     }
 
     public abstract DocumentDao documentDao();
+
+    public abstract TagDao tagDao();
+
+    public abstract DocumentTagJoinDao documentTagJoinDao();
 }

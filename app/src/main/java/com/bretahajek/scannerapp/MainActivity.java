@@ -6,6 +6,8 @@ import android.view.TextureView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.bretahajek.scannerapp.db.AppDatabase;
+
 import org.opencv.android.OpenCVLoader;
 
 
@@ -25,5 +27,15 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        AppDatabase.getInstance(getBaseContext());
+
+    }
+
+    public AppDatabase getDatabase() {
+        return AppDatabase.getInstance(this);
+    }
+
+    public DataRepository getRepository() {
+        return DataRepository.getInstance(getDatabase());
     }
 }
