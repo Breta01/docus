@@ -1,7 +1,6 @@
 package com.bretahajek.scannerapp.fragments;
 
 import android.app.ActionBar;
-import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
@@ -15,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.Toast;
@@ -33,6 +33,7 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
 import com.bretahajek.scannerapp.R;
+import com.bretahajek.scannerapp.fragments.CameraFragmentDirections.ActionCameraToPreview;
 import com.bretahajek.scannerapp.ocr.PageDetector;
 import com.bretahajek.scannerapp.ui.PageSurface;
 
@@ -49,10 +50,13 @@ import java.nio.ByteBuffer;
 
 public class CameraFragment extends Fragment {
     private static int IMMERSIVE_FLAG_TIMEOUT = 300;
-    private OnFragmentInteractionListener callback;
+
     private TextureView viewFinder;
     private PageSurface pageSurface;
     private ConstraintLayout container;
+    private String documentName;
+    private ImageCapture imageCapture = null;
+    private ImageAnalysis imageAnalyzer = null;
     private HandlerThread analyzerThread = new HandlerThread("PageAnalysis");
     private Runnable immersiveModeRunnable = new Runnable() {
         @Override
@@ -75,10 +79,43 @@ public class CameraFragment extends Fragment {
     public CameraFragment() {
     }
 
+    private ImageCapture.OnImageSavedListener imListener = new ImageCapture.OnImageSavedListener() {
+        @Override
+        public void onImageSaved(@NonNull File file) {
+            String msg = getString(R.string.image_save_success);
+            Toast.makeText(
+                    getActivity().getBaseContext(),
+                    msg,
+                    Toast.LENGTH_SHORT).show();
+            ActionCameraToPreview action = CameraFragmentDirections.actionCameraToPreview(file.getPath());
+            action.setDocumentName(documentName);
+            Navigation.findNavController(
+                    requireActivity(), R.id.fragment_container).navigate(action);
+        }
+
+        @Override
+        public void onError(
+                @NonNull ImageCapture.UseCaseError useCaseError,
+                @NonNull String message,
+                Throwable cause) {
+            String msg = getString(R.string.image_save_failed);
+            Toast.makeText(
+                    getActivity().getBaseContext(),
+                    msg,
+                    Toast.LENGTH_SHORT).show();
+            Log.i(getString(R.string.app_name), message);
+            Log.e(getString(R.string.app_name), msg);
+        }
+    };
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
+
+        documentName = CameraFragmentArgs.fromBundle(getArguments()).getDocumentName();
+
+        // TODO: Change back button to finish if documentName not null
 
         if (!HomeFragment.allPermissionsGranted(requireContext())) {
             Navigation.findNavController(requireActivity(), R.id.fragment_container).navigate(
@@ -87,6 +124,31 @@ public class CameraFragment extends Fragment {
         }
 
         analyzerThread.start();
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        return inflater.inflate(R.layout.fragment_camera, container, false);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        container = (ConstraintLayout) view;
+        container.post(immersiveModeRunnable);
+
+        pageSurface = (PageSurface) container.getViewById(R.id.page_surface);
+
+        viewFinder = (TextureView) container.getViewById(R.id.view_finder);
+        viewFinder.post(new Runnable() {
+            @Override
+            public void run() {
+                buildCameraUi();
+                startCamera();
+            }
+        });
     }
 
     @Override
@@ -108,53 +170,12 @@ public class CameraFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_camera, container, false);
-    }
-
-    @Override
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        callback = null;
-    }
-
-    @Override
-    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        container = (ConstraintLayout) view;
-        container.post(immersiveModeRunnable);
-
-        Button cameraButton = view.findViewById(R.id.button_back_home);
-        cameraButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                pageSurface.pause();
-                Navigation.findNavController(requireActivity(), R.id.fragment_container).navigate(
-                        CameraFragmentDirections.actionCameraToHome()
-                );
-            }
-        });
-
-        pageSurface = (PageSurface) container.getViewById(R.id.page_surface);
-
-        viewFinder = (TextureView) container.getViewById(R.id.view_finder);
-        viewFinder.post(new Runnable() {
-            @Override
-            public void run() {
-                startCamera();
-            }
-        });
+    public void onDestroyView() {
+        super.onDestroyView();
+        getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
     }
 
     private void startCamera() {
-        CameraX.unbindAll();
-
         DisplayMetrics metrics = new DisplayMetrics();
         viewFinder.getDisplay().getRealMetrics(metrics);
         Rational screenAspectRatio = new Rational(metrics.widthPixels, metrics.heightPixels);
@@ -177,19 +198,38 @@ public class CameraFragment extends Fragment {
                 }
         );
 
-        ImageCapture imageCapture = getImageCapture(screenAspectRatio);
-        ImageAnalysis imageAnalysis = getImageAnalysis(screenAspectRatio);
-
-        CameraX.bindToLifecycle(this, preview, imageCapture, imageAnalysis);
-    }
-
-    private ImageCapture getImageCapture(Rational aspectRatio) {
         ImageCaptureConfig config = new ImageCaptureConfig.Builder()
-                .setTargetAspectRatio(aspectRatio)
+                .setTargetAspectRatio(screenAspectRatio)
                 .setCaptureMode(ImageCapture.CaptureMode.MIN_LATENCY)
                 .build();
-        final ImageCapture imageCapture = new ImageCapture(config);
+        imageCapture = new ImageCapture(config);
 
+
+        ImageAnalysisConfig analyzerConfig = new ImageAnalysisConfig.Builder()
+                .setTargetAspectRatio(screenAspectRatio)
+                .setCallbackHandler(new Handler(analyzerThread.getLooper()))
+                .setImageReaderMode(ImageAnalysis.ImageReaderMode.ACQUIRE_LATEST_IMAGE)
+                .build();
+        imageAnalyzer = new ImageAnalysis(analyzerConfig);
+        imageAnalyzer.setAnalyzer(new PageAnalyzer());
+
+        CameraX.bindToLifecycle(getViewLifecycleOwner(), preview, imageCapture, imageAnalyzer);
+    }
+
+    private void buildCameraUi() {
+        // Go back button
+        Button backButton = container.findViewById(R.id.button_back_home);
+        backButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                pageSurface.pause();
+                Navigation.findNavController(requireActivity(), R.id.fragment_container).navigate(
+                        CameraFragmentDirections.actionCameraToHome()
+                );
+            }
+        });
+
+        // Camere capture button
         ImageButton captureButton = container.findViewById(R.id.capture_button);
         captureButton.setOnClickListener(
                 new View.OnClickListener() {
@@ -197,37 +237,12 @@ public class CameraFragment extends Fragment {
                     public void onClick(View v) {
                         File file = new File(
                                 getActivity().getExternalFilesDir(null),
-                                "test.jpg");
-                        Log.e(
+                                "tmp.jpg");
+                        Log.i(
                                 getString(R.string.app_name),
                                 "Saving to: " + file.getAbsolutePath());
 
-                        imageCapture.takePicture(file,
-                                new ImageCapture.OnImageSavedListener() {
-                                    @Override
-                                    public void onImageSaved(@NonNull File file) {
-                                        String msg = getString(R.string.image_save_success);
-                                        Toast.makeText(
-                                                getActivity().getBaseContext(),
-                                                msg,
-                                                Toast.LENGTH_SHORT).show();
-                                        Log.d(getString(R.string.app_name), msg);
-                                    }
-
-                                    @Override
-                                    public void onError(
-                                            @NonNull ImageCapture.UseCaseError useCaseError,
-                                            @NonNull String message,
-                                            Throwable cause) {
-                                        String msg = getString(R.string.image_save_failed);
-                                        Toast.makeText(
-                                                getActivity().getBaseContext(),
-                                                msg,
-                                                Toast.LENGTH_SHORT).show();
-                                        Log.e(getString(R.string.app_name), msg);
-                                        Log.e(getString(R.string.app_name), message);
-                                    }
-                                });
+                        imageCapture.takePicture(file, imListener);
 
                         // If possible display flash animation to indicate that photo was captured
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -247,21 +262,6 @@ public class CameraFragment extends Fragment {
                     }
                 }
         );
-
-        return imageCapture;
-    }
-
-    private ImageAnalysis getImageAnalysis(Rational aspectRation) {
-        ImageAnalysisConfig config = new ImageAnalysisConfig.Builder()
-                .setTargetAspectRatio(aspectRation)
-                .setCallbackHandler(new Handler(analyzerThread.getLooper()))
-                .setImageReaderMode(ImageAnalysis.ImageReaderMode.ACQUIRE_LATEST_IMAGE)
-                .build();
-        ImageAnalysis imageAnalysis = new ImageAnalysis(config);
-
-        imageAnalysis.setAnalyzer(new PageAnalyzer());
-
-        return imageAnalysis;
     }
 
     private class PageAnalyzer implements ImageAnalysis.Analyzer {
@@ -305,15 +305,5 @@ public class CameraFragment extends Fragment {
                 pageSurface.updateCorners(relCorners.toArray());
             }
         }
-    }
-
-    public void setOnFragmentInteractionListener(OnFragmentInteractionListener callback) {
-        this.callback = callback;
-    }
-
-    /** Communicating with Other Fragments for more information.
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     */
-    public interface OnFragmentInteractionListener {
     }
 }

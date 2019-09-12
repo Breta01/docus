@@ -11,12 +11,24 @@
         android:label="fragment_camera"
         tools:layout="@layout/fragment_camera">
 
+        <argument
+            android:name="documentName"
+            android:defaultValue="@null"
+            app:argType="string"
+            app:nullable="true" />
+
         <action
             android:id="@+id/action_camera_to_home"
-            app:destination="@id/homeFragment" />
-
+            app:destination="@id/homeFragment"
+            app:popUpTo="@+id/homeFragment"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_camera_to_preview"
+            app:destination="@id/scanPreviewFragment"
+            app:enterAnim="@anim/fragment_open_enter"
+            app:exitAnim="@anim/fragment_open_exit"
+            app:popExitAnim="@anim/fragment_open_exit" />
     </fragment>
-
 
     <fragment
         android:id="@+id/homeFragment"
@@ -26,6 +38,34 @@
         <action
             android:id="@+id/action_home_to_camera"
             app:destination="@+id/cameraFragment" />
+    </fragment>
 
+    <fragment
+        android:id="@+id/scanPreviewFragment"
+        android:name="com.bretahajek.scannerapp.fragments.ScanPreviewFragment"
+        android:label="fragment_scan_preview"
+        tools:layout="@layout/fragment_scan_preview">
+
+        <argument
+            android:name="imagePath"
+            app:argType="string" />
+        <argument
+            android:name="documentName"
+            android:defaultValue="@null"
+            app:argType="string"
+            app:nullable="true" />
+
+        <action
+            android:id="@+id/action_preview_to_camera"
+            app:destination="@id/cameraFragment"
+            app:popUpTo="@+id/cameraFragment"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_preview_to_home"
+            app:destination="@id/homeFragment"
+            app:enterAnim="@anim/fragment_close_exit"
+            app:popEnterAnim="@anim/fragment_close_exit"
+            app:popUpTo="@+id/homeFragment"
+            app:popUpToInclusive="true" />
     </fragment>
 </navigation>
