@@ -27,15 +27,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        AppDatabase.getInstance(getBaseContext());
-
+        getDatabase();
     }
 
     public AppDatabase getDatabase() {
         return AppDatabase.getInstance(this);
-    }
-
-    public DataRepository getRepository() {
-        return DataRepository.getInstance(getDatabase());
     }
 }

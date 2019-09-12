@@ -1,5 +1,6 @@
 package com.bretahajek.scannerapp.fragments;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
@@ -18,8 +19,10 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
+import com.bretahajek.scannerapp.AppExecutors;
 import com.bretahajek.scannerapp.R;
 import com.bretahajek.scannerapp.db.AppDatabase;
+import com.bretahajek.scannerapp.db.Document;
 import com.bretahajek.scannerapp.ocr.PageDetector;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
@@ -41,10 +44,10 @@ public class ScanPreviewFragment extends Fragment {
     private String documentName;
     private String imagePath;
     private ImageView scanPreview;
-    // TODO: Check if image saved before moving
-    private boolean imageReady = false;
+    private boolean imageReady = false;  // Check if image is ready for moving
     private AlertDialog dialog;
     private AppDatabase database;
+    private Activity mActivity;
 
 
     public ScanPreviewFragment() {
@@ -60,7 +63,8 @@ public class ScanPreviewFragment extends Fragment {
         // Run cropping in background
         new asyncScanPreview().execute(imagePath);
 
-        database = AppDatabase.getInstance(requireContext());
+        database = AppDatabase.getInstance(getContext());
+        mActivity = requireActivity();
     }
 
     @Override
@@ -77,8 +81,8 @@ public class ScanPreviewFragment extends Fragment {
     }
 
     private void buildDialog(boolean rebuild) {
-        final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        final TextInputEditText textInput = new TextInputEditText(getContext());
+        final AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
+        final TextInputEditText textInput = new TextInputEditText(requireContext());
 
         if (documentName == null) {
             final TextInputLayout inputLayout = new TextInputLayout(getContext());
@@ -109,14 +113,7 @@ public class ScanPreviewFragment extends Fragment {
                     documentName = textInput.getText().toString().trim();
                 }
 
-                if (saveImageToDocument()) {
-                    Navigation.findNavController(
-                            requireActivity(), R.id.fragment_container)
-                            .navigate(ScanPreviewFragmentDirections.actionPreviewToHome());
-                } else {
-                    documentName = null;
-                    buildDialog(true);
-                }
+                saveImageToDocument("home");
             }
         });
         builder.setNeutralButton("Add page", new DialogInterface.OnClickListener() {
@@ -125,12 +122,7 @@ public class ScanPreviewFragment extends Fragment {
                     documentName = textInput.getText().toString().trim();
                 }
 
-                if (saveImageToDocument()) {
-                    goBackToCamera(documentName);
-                } else {
-                    documentName = null;
-                    buildDialog(true);
-                }
+                saveImageToDocument("camera");
             }
         });
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -178,50 +170,82 @@ public class ScanPreviewFragment extends Fragment {
         String convertedString = Normalizer
                 .normalize(s, Normalizer.Form.NFD)
                 .replaceAll("[^\\p{ASCII}]", "")
-                .replaceAll("[^a-zA-Z0-9-_\\.]", "_");
-        convertedString.substring(0, Math.min(convertedString.length(), 100));
+                .replaceAll("[^a-zA-Z0-9-_/\\.]", "_");
+        convertedString = convertedString.substring(0, Math.min(convertedString.length(), 100));
         String timestamp = new SimpleDateFormat("yyyyMMdd-HHmmss").format(new Date());
         return convertedString + "-" + timestamp;
     }
 
-    private boolean saveImageToDocument() {
-        // TODO: if document in databes doesnt exist
-        // Create db entry + create folder, count pages, move image to folder, rename image
-        // Wait for image to be saved
-//        Document document = database.documentDao().findByName(documentName);
-        String document = null;
-        if (document != null) {
-            Log.i("Exists", "Document exists");
-        } else {
-            String documentString = stringToDirectory(documentName);
-            File documentDir = new File(
-                    getActivity().getExternalFilesDir(null), documentString);
+    private void saveImageToDocument(final String goTo) {
+        AppExecutors.getInstance().diskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                Document document = database.documentDao().findByName(documentName);
+                boolean created = (document == null);
+                if (document == null) {
+                    String documentString = stringToDirectory(documentName);
+                    document = new Document(documentName, documentString, new Date(), 1);
+                } else {
+                    document.pageCount += 1;
+                }
 
+                File documentDir = new File(
+                        getActivity().getExternalFilesDir(null), document.folder);
 
-            if (!documentDir.exists() && !documentDir.mkdirs()) {
-                Log.e("ScanPreviewFragment", "Unable to create the document.");
-                return false;
-            }
+                if (!documentDir.exists() && !documentDir.mkdirs()) {
+                    Log.e("ScanPreviewFragment", "Unable to create the document.");
+                    documentName = null;
+                    AppExecutors.getInstance().mainThread().execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            buildDialog(true);
+                        }
+                    });
 
-            // Move outside of if
-            while (!imageReady) {
-                try {
-                    Thread.sleep(200);
-                } catch (Exception e) {
+                } else {
+                    while (!imageReady) {
+                        try {
+                            Thread.sleep(200);
+                        } catch (Exception e) {
+                        }
+                    }
+
+                    File sourceFile = new File(imagePath);
+                    File dstFile = new File(
+                            documentDir, document.pageCount + ".jpg");
+                    try {
+                        FileUtils.moveFile(sourceFile, dstFile);
+                    } catch (IOException e) {
+                        Log.e("ScanPreviewFragment", "Unable to save file.");
+                        documentName = null;
+                        buildDialog(true);
+                    }
+
+                    if (created) {
+                        database.documentDao().insertAll(document);
+                    } else {
+                        database.documentDao().update(document);
+                    }
+
+                    AppExecutors.getInstance().mainThread().execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (goTo.equals("camera")) {
+                                goBackToCamera(documentName);
+                            } else if (goTo.equals("home")) {
+                                goHome();
+                            }
+                        }
+                    });
                 }
             }
-            File sourceFile = new File(imagePath);
-            File dstFile = new File(documentDir, Integer.toString(1) + ".jpg");
-            try {
-                FileUtils.moveFile(sourceFile, dstFile);
-            } catch (IOException e) {
-                Log.e("ScanPreviewFragment", "Unable to save file.");
-                return false;
-            }
-        }
-        // Create document entry
+        });
+    }
 
-        return true;
+    private void goHome() {
+        Navigation.findNavController(
+                mActivity, R.id.fragment_container)
+                .navigate(ScanPreviewFragmentDirections.actionPreviewToHome());
     }
 
     private void goBackToCamera(String docName) {
@@ -229,7 +253,7 @@ public class ScanPreviewFragment extends Fragment {
                 ScanPreviewFragmentDirections.actionPreviewToCamera();
         action.setDocumentName(docName);
         Navigation.findNavController(
-                requireActivity(), R.id.fragment_container).navigate(action);
+                mActivity, R.id.fragment_container).navigate(action);
     }
 
     private class asyncScanPreview extends AsyncTask<String, Bitmap, Void> {
