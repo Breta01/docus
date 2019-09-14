@@ -20,8 +20,9 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
 import com.bretahajek.scannerapp.AppExecutors;
+import com.bretahajek.scannerapp.DataRepository;
 import com.bretahajek.scannerapp.R;
-import com.bretahajek.scannerapp.db.AppDatabase;
+import com.bretahajek.scannerapp.ScannerApp;
 import com.bretahajek.scannerapp.db.Document;
 import com.bretahajek.scannerapp.ocr.PageDetector;
 import com.google.android.material.textfield.TextInputEditText;
@@ -43,10 +44,13 @@ import java.util.Date;
 public class ScanPreviewFragment extends Fragment {
     private String documentName;
     private String imagePath;
+
     private ImageView scanPreview;
     private boolean imageReady = false;  // Check if image is ready for moving
+
     private AlertDialog dialog;
-    private AppDatabase database;
+
+    private DataRepository dataRepository;
     private Activity mActivity;
 
 
@@ -63,8 +67,8 @@ public class ScanPreviewFragment extends Fragment {
         // Run cropping in background
         new asyncScanPreview().execute(imagePath);
 
-        database = AppDatabase.getInstance(getContext());
         mActivity = requireActivity();
+        dataRepository = ((ScannerApp) mActivity.getApplication()).getRepository();
     }
 
     @Override
@@ -180,7 +184,7 @@ public class ScanPreviewFragment extends Fragment {
         AppExecutors.getInstance().diskIO().execute(new Runnable() {
             @Override
             public void run() {
-                Document document = database.documentDao().findByName(documentName);
+                Document document = dataRepository.findByName(documentName);
                 boolean created = (document == null);
                 if (document == null) {
                     String documentString = stringToDirectory(documentName);
@@ -222,9 +226,9 @@ public class ScanPreviewFragment extends Fragment {
                     }
 
                     if (created) {
-                        database.documentDao().insertAll(document);
+                        dataRepository.insertDocuments(document);
                     } else {
-                        database.documentDao().update(document);
+                        dataRepository.updateDocument(document);
                     }
 
                     AppExecutors.getInstance().mainThread().execute(new Runnable() {
