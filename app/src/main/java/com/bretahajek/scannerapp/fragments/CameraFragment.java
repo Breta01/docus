@@ -20,6 +20,7 @@ import android.widget.ImageButton;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.camera.core.CameraX;
 import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.ImageAnalysisConfig;
@@ -95,9 +96,9 @@ public class CameraFragment extends Fragment {
 
         @Override
         public void onError(
-                @NonNull ImageCapture.UseCaseError useCaseError,
+                @NonNull ImageCapture.ImageCaptureError imageCaptureError,
                 @NonNull String message,
-                Throwable cause) {
+                @Nullable Throwable cause) {
             String msg = getString(R.string.image_save_failed);
             Toast.makeText(
                     getActivity().getBaseContext(),
@@ -279,7 +280,7 @@ public class CameraFragment extends Fragment {
             if (image.getFormat() == 35 && image.getPlanes()[0].getPixelStride() == 1) {
                 Mat matImage = imageToGrayscaleMat(image);
                 if (rotationDegrees != 0) {
-                    int rotate;
+                    int rotate = -1;
                     switch (rotationDegrees) {
                         case 90:
                             rotate = Core.ROTATE_90_CLOCKWISE;
@@ -291,7 +292,9 @@ public class CameraFragment extends Fragment {
                             rotate = Core.ROTATE_90_COUNTERCLOCKWISE;
                             break;
                     }
-                    Core.rotate(matImage, matImage, Core.ROTATE_90_CLOCKWISE);
+                    if (rotate != -1) {
+                        Core.rotate(matImage, matImage, rotate);
+                    }
                 }
 
                 MatOfPoint corners = PageDetector.getPageCorners(matImage);

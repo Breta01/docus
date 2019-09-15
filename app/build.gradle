@@ -28,23 +28,27 @@ android {
                     'proguard-rules.pro'
         }
     }
+    // DataBinding into layout
+    dataBinding {
+        enabled true
+    }
 }
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'androidx.appcompat:appcompat:1.1.0-rc01'
+    implementation 'androidx.appcompat:appcompat:1.1.0'
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'androidx.test:runner:1.1.1'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'
+    androidTestImplementation 'androidx.test:runner:1.2.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
     // Adding CameraX library
-    def camerax_version = "1.0.0-alpha04"
+    def camerax_version = "1.0.0-alpha05"
     implementation "androidx.camera:camera-core:${camerax_version}"
     implementation "androidx.camera:camera-camera2:${camerax_version}"
 
     // Adding Navigation component
-    def nav_version = '2.2.0-alpha01'
+    def nav_version = '2.2.0-alpha02'
     implementation "androidx.navigation:navigation-fragment:$nav_version"
     implementation "androidx.navigation:navigation-ui:$nav_version"
 
@@ -59,4 +63,8 @@ dependencies {
 
     // Working with files
     implementation group: 'commons-io', name: 'commons-io', version: '2.6'
+
+    // LiveData, ViewModel
+    def lifecycle_version = "2.1.0"
+    implementation "androidx.lifecycle:lifecycle-extensions:$lifecycle_version"
 }
