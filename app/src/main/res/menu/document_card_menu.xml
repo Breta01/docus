@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/dc_menu_export"
+        android:title="Export" />
+
+    <item
+        android:id="@+id/dc_menu_tags"
+        android:title="Edit tags" />
+
+    <item
+        android:id="@+id/dc_menu_delete"
+        android:title="Delete" />
+
+</menu>

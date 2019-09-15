@@ -1,5 +1,7 @@
 package com.bretahajek.scannerapp;
 
+import android.util.Log;
+
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.Observer;
@@ -8,6 +10,9 @@ import com.bretahajek.scannerapp.db.AppDatabase;
 import com.bretahajek.scannerapp.db.Document;
 import com.bretahajek.scannerapp.db.Tag;
 
+import org.apache.commons.io.FileUtils;
+
+import java.io.File;
 import java.util.List;
 
 public class DataRepository {
@@ -71,6 +76,22 @@ public class DataRepository {
             @Override
             public void run() {
                 mDatabase.documentDao().update(document);
+            }
+        });
+    }
+
+    public void deleteDocument(final Document document, final File deleteFolder) {
+        mExecutors.diskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                if (deleteFolder != null) {
+                    try {
+                        FileUtils.deleteDirectory(deleteFolder);
+                    } catch (Exception e) {
+                        Log.e("Data Repository", "Unable to delete document.");
+                    }
+                }
+                mDatabase.documentDao().delete(document);
             }
         });
     }

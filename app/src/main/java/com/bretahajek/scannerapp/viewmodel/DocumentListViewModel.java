@@ -2,6 +2,7 @@ package com.bretahajek.scannerapp.viewmodel;
 
 import android.app.Application;
 
+import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
@@ -11,6 +12,7 @@ import com.bretahajek.scannerapp.DataRepository;
 import com.bretahajek.scannerapp.ScannerApp;
 import com.bretahajek.scannerapp.db.Document;
 
+import java.io.File;
 import java.util.List;
 
 public class DocumentListViewModel extends AndroidViewModel {
@@ -40,5 +42,9 @@ public class DocumentListViewModel extends AndroidViewModel {
 
     public LiveData<List<Document>> searchDocuments(String query) {
         return mRepository.searchDocuments(query);
+    }
+
+    public void deleteDocument(@NonNull Document document, File deleteFolder) {
+        mRepository.deleteDocument(document, deleteFolder);
     }
 }

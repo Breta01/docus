@@ -5,7 +5,6 @@ import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -67,7 +66,7 @@ public class HomeFragment extends Fragment {
                              Bundle savedInstanceState) {
         mBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_home, container, false);
 
-        mDocumentAdapter = new DocumentAdapter(mDocumentClickCallback);
+        mDocumentAdapter = new DocumentAdapter(mDocumentClickCallback, getContext());
         mBinding.documentsList.setAdapter(mDocumentAdapter);
 
         return mBinding.getRoot();
@@ -152,9 +151,7 @@ public class HomeFragment extends Fragment {
     private final DocumentClickCallback mDocumentClickCallback = new DocumentClickCallback() {
         @Override
         public void onClick(Document document) {
-
             if (getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.STARTED)) {
-                Log.i("Document Event", document.getName());
                 Navigation.findNavController(getActivity(), R.id.fragment_container).navigate(
                         HomeFragmentDirections.actionHomeToDocument(document.getFolder()));
             }
