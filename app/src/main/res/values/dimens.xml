@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="dp_19">19dp</dimen>
+    <!-- Variables for list view -->
+    <dimen name="document_item_min_height">100dp</dimen>
+    <dimen name="item_horizontal_margin">8dp</dimen>
+    <dimen name="topbar_elevation">4dp</dimen>
 </resources>

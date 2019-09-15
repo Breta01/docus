@@ -28,6 +28,10 @@ android {
                     'proguard-rules.pro'
         }
     }
+    // DataBinding into layout
+    dataBinding {
+        enabled true
+    }
 }
 
 dependencies {

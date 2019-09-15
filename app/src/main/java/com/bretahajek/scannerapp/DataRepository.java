@@ -53,6 +53,10 @@ public class DataRepository {
         return mDatabase.documentDao().findByName(name);
     }
 
+    public LiveData<List<Document>> searchDocuments(String query) {
+        return mDatabase.documentDao().searchAll(query);
+    }
+
     public void insertDocuments(final Document... documents) {
         mExecutors.diskIO().execute(new Runnable() {
             @Override

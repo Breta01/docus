@@ -21,6 +21,9 @@ public interface DocumentDao {
     @Query("SELECT * FROM document WHERE name LIKE :name LIMIT 1")
     Document findByName(String name);
 
+    @Query("SELECT * FROM document WHERE name LIKE '%' || :query || '%'")
+    LiveData<List<Document>> searchAll(String query);
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertAll(Document... documents);
 
