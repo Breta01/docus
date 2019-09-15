@@ -155,7 +155,8 @@ public class HomeFragment extends Fragment {
 
             if (getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.STARTED)) {
                 Log.i("Document Event", document.getName());
-//                ((MainActivity) getActivity()).show(product);
+                Navigation.findNavController(getActivity(), R.id.fragment_container).navigate(
+                        HomeFragmentDirections.actionHomeToDocument(document.getFolder()));
             }
         }
     };

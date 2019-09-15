@@ -9,4 +9,7 @@
     <string name="doc_name_hint">Document Name</string>
 
     <string name="document_page_count">Pages: %d</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

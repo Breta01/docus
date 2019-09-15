@@ -116,8 +116,6 @@ public class CameraFragment extends Fragment {
 
         documentName = CameraFragmentArgs.fromBundle(getArguments()).getDocumentName();
 
-        // TODO: Change back button to finish if documentName not null
-
         if (!HomeFragment.allPermissionsGranted(requireContext())) {
             Navigation.findNavController(requireActivity(), R.id.fragment_container).navigate(
                     CameraFragmentDirections.actionCameraToHome()
@@ -220,6 +218,9 @@ public class CameraFragment extends Fragment {
     private void buildCameraUi() {
         // Go back button
         Button backButton = container.findViewById(R.id.button_back_home);
+        if (documentName != null) {
+            backButton.setText("Finish");
+        }
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

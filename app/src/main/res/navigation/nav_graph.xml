@@ -38,6 +38,9 @@
         <action
             android:id="@+id/action_home_to_camera"
             app:destination="@+id/cameraFragment" />
+        <action
+            android:id="@+id/action_home_to_document"
+            app:destination="@id/documentFragment" />
     </fragment>
 
     <fragment
@@ -67,5 +70,16 @@
             app:popEnterAnim="@anim/fragment_close_exit"
             app:popUpTo="@+id/homeFragment"
             app:popUpToInclusive="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/documentFragment"
+        android:name="com.bretahajek.scannerapp.fragments.DocumentFragment"
+        android:label="fragment_document"
+        tools:layout="@layout/fragment_document">
+
+        <argument
+            android:name="documentFolder"
+            app:argType="string" />
     </fragment>
 </navigation>

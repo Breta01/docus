@@ -52,10 +52,10 @@ public class DocumentAdapter extends RecyclerView.Adapter<DocumentAdapter.Docume
                     Document newProduct = documentList.get(newItemPosition);
                     Document oldProduct = mDocumentList.get(oldItemPosition);
                     return newProduct.getId() == oldProduct.getId()
-                            && newProduct.getName() == oldProduct.getName()
-                            && newProduct.getFolder() == oldProduct.getFolder()
                             && newProduct.getPageCount() == oldProduct.getPageCount()
-                            && newProduct.getCreationDate() == oldProduct.getCreationDate();
+                            && newProduct.getName().equals(oldProduct.getName())
+                            && newProduct.getFolder().equals(oldProduct.getFolder())
+                            && newProduct.getCreationDate().equals(oldProduct.getCreationDate());
                 }
             });
             mDocumentList = documentList;
