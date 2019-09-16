@@ -99,4 +99,13 @@ public class DataRepository {
     public LiveData<List<Tag>> getTags() {
         return mDatabase.tagDao().getAll();
     }
+
+    public void insertTags(final Tag... tags) {
+        mExecutors.diskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                mDatabase.tagDao().insertAll(tags);
+            }
+        });
+    }
 }

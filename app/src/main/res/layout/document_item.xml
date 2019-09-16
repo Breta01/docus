@@ -23,6 +23,7 @@
         android:foreground="?android:attr/selectableItemBackground"
         android:minHeight="@dimen/document_item_min_height"
         android:onClick="@{() ->  callback.onClick(document)}"
+        android:longClickable="true"
         android:orientation="horizontal"
         app:cardUseCompatPadding="true">
 

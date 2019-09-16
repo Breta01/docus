@@ -1,41 +1,28 @@
 package com.bretahajek.scannerapp.ui;
 
-import android.content.Context;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.PopupMenu;
 
 import androidx.annotation.Nullable;
 import androidx.databinding.DataBindingUtil;
-import androidx.fragment.app.FragmentActivity;
-import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bretahajek.scannerapp.R;
 import com.bretahajek.scannerapp.databinding.DocumentItemBinding;
 import com.bretahajek.scannerapp.db.Document;
-import com.bretahajek.scannerapp.viewmodel.DocumentListViewModel;
 
-import java.io.File;
 import java.util.List;
 
 public class DocumentAdapter extends RecyclerView.Adapter<DocumentAdapter.DocumentViewHolder> {
     List<? extends Document> mDocumentList;
 
-    private Context mContext;
-    private DocumentListViewModel viewModel;
-
     @Nullable
-    private final DocumentClickCallback mProductClickCallback;
+    private final DocumentClickCallback mDocumentClickCallback;
 
-    public DocumentAdapter(@Nullable DocumentClickCallback clickCallback, Context context) {
-        mProductClickCallback = clickCallback;
-        mContext = context;
-        viewModel =
-                new ViewModelProvider((FragmentActivity) context).get(DocumentListViewModel.class);
+    public DocumentAdapter(@Nullable DocumentClickCallback clickCallback) {
+        mDocumentClickCallback = clickCallback;
         setHasStableIds(true);
     }
 
@@ -63,13 +50,13 @@ public class DocumentAdapter extends RecyclerView.Adapter<DocumentAdapter.Docume
 
                 @Override
                 public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
-                    Document newProduct = documentList.get(newItemPosition);
-                    Document oldProduct = mDocumentList.get(oldItemPosition);
-                    return newProduct.getId() == oldProduct.getId()
-                            && newProduct.getPageCount() == oldProduct.getPageCount()
-                            && newProduct.getName().equals(oldProduct.getName())
-                            && newProduct.getFolder().equals(oldProduct.getFolder())
-                            && newProduct.getCreationDate().equals(oldProduct.getCreationDate());
+                    Document newDocument = documentList.get(newItemPosition);
+                    Document oldDocument = mDocumentList.get(oldItemPosition);
+                    return newDocument.getId() == oldDocument.getId()
+                            && newDocument.getPageCount() == oldDocument.getPageCount()
+                            && newDocument.getName().equals(oldDocument.getName())
+                            && newDocument.getFolder().equals(oldDocument.getFolder())
+                            && newDocument.getCreationDate().equals(oldDocument.getCreationDate());
                 }
             });
             mDocumentList = documentList;
@@ -82,7 +69,7 @@ public class DocumentAdapter extends RecyclerView.Adapter<DocumentAdapter.Docume
         DocumentItemBinding binding = DataBindingUtil
                 .inflate(LayoutInflater.from(parent.getContext()), R.layout.document_item,
                         parent, false);
-        binding.setCallback(mProductClickCallback);
+        binding.setCallback(mDocumentClickCallback);
         return new DocumentViewHolder(binding);
     }
 
@@ -92,7 +79,7 @@ public class DocumentAdapter extends RecyclerView.Adapter<DocumentAdapter.Docume
         holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
-                buildPopupMenu(holder, view);
+                mDocumentClickCallback.onLongClick(holder, view);
                 return false;
             }
         });
@@ -100,37 +87,11 @@ public class DocumentAdapter extends RecyclerView.Adapter<DocumentAdapter.Docume
         holder.binding.dropdownMenu.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                buildPopupMenu(holder, holder.binding.dropdownMenu);
+                mDocumentClickCallback.onMenuClick(holder, holder.binding.dropdownMenu);
             }
         });
 
         holder.binding.executePendingBindings();
-    }
-
-    private void buildPopupMenu(DocumentViewHolder holder, View bindView) {
-        PopupMenu menu = new PopupMenu(mContext, bindView);
-        menu.inflate(R.menu.document_card_menu);
-
-        final Document document = holder.binding.getDocument();
-        menu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem menuItem) {
-                switch (menuItem.getItemId()) {
-                    case R.id.dc_menu_export:
-                        break;
-                    case R.id.dc_menu_tags:
-                        break;
-                    case R.id.dc_menu_delete:
-                        // TODO: "Are you sure" dialog
-                        File deleteFolder = new File(
-                                mContext.getExternalFilesDir(null), document.getFolder());
-                        viewModel.deleteDocument(document, deleteFolder);
-                        break;
-                }
-                return false;
-            }
-        });
-        menu.show();
     }
 
     @Override
@@ -143,9 +104,9 @@ public class DocumentAdapter extends RecyclerView.Adapter<DocumentAdapter.Docume
         return mDocumentList.get(position).getId();
     }
 
-    static class DocumentViewHolder extends RecyclerView.ViewHolder {
+    public static class DocumentViewHolder extends RecyclerView.ViewHolder {
 
-        final DocumentItemBinding binding;
+        public final DocumentItemBinding binding;
 
         public DocumentViewHolder(DocumentItemBinding binding) {
             super(binding.getRoot());
