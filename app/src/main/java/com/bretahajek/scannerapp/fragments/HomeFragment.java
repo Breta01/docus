@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -152,7 +153,7 @@ public class HomeFragment extends Fragment {
     }
 
     private void subscribeUi(LiveData<List<Document>> liveDocumentData) {
-        // Update the list when the data changes
+        // Update the document list when the data changes
         liveDocumentData.observe(this, new Observer<List<Document>>() {
             @Override
             public void onChanged(@Nullable List<Document> myDocuments) {
@@ -176,26 +177,39 @@ public class HomeFragment extends Fragment {
         });
     }
 
-    private void addTag(String name) {
-        if (name.length() != 0) {
-            Tag tag = new Tag(name, 0);
-            tagViewModel.createTag(tag);
-        }
+    private void subsribeDocumentTagsUi(final LiveData<List<Tag>> liveTagData) {
+        liveTagData.observe(this, new Observer<List<Tag>>() {
+            @Override
+            public void onChanged(@Nullable List<Tag> myTags) {
+                if (myTags != null) {
+                    mTagAdapter.setDocumentTagList(myTags);
+                    // Remove observer after loading - need them only on spawn of dialog
+                    liveTagData.removeObserver(this);
+//                    liveTagData.removeObserver(this);
+                }
+            }
+        });
     }
 
-    private void buildTagsDialog(Document document) {
+    private void buildTagsDialog(final Document document) {
         final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle("Set Tags - " + document.getName());
 
         final TagsDialogBinding binding = DataBindingUtil
                 .inflate(requireActivity().getLayoutInflater(), R.layout.tags_dialog,
                         null, false);
+
+        subsribeDocumentTagsUi(tagViewModel.getDocumentTags(document));
         binding.tagsRecyclerView.setAdapter(mTagAdapter);
         binding.addTagButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                addTag(binding.addTagText.getText().toString());
-                binding.addTagText.setText("");
+                String name = binding.addTagText.getText().toString();
+                if (name.length() != 0) {
+                    Tag tag = new Tag(name);
+                    tagViewModel.createTag(tag);
+                    binding.addTagText.setText("");
+                }
             }
         });
 
@@ -204,6 +218,8 @@ public class HomeFragment extends Fragment {
 
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
+//                tagViewModel.getDocumentTags(document).removeObservers(getActivity());
+                tagViewModel.updateDocumentTags(document, mTagAdapter.getTagList());
 
             }
         });
@@ -212,6 +228,14 @@ public class HomeFragment extends Fragment {
                 dialog.cancel();
             }
         });
+        builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialogInterface) {
+                Log.i("Dismiss", "can");
+                mTagAdapter.clearTagStates();
+            }
+        });
+
         builder.create().show();
     }
 

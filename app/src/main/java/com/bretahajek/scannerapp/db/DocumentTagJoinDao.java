@@ -28,4 +28,6 @@ public interface DocumentTagJoinDao {
             "ON tag.id=document_tag_join.tag_id " +
             "WHERE document_tag_join.document_id=:documentId")
     LiveData<List<Tag>> getTagsForDocument(final int documentId);
+
+
 }

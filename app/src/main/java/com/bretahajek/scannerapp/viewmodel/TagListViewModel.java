@@ -10,6 +10,7 @@ import androidx.lifecycle.Observer;
 
 import com.bretahajek.scannerapp.DataRepository;
 import com.bretahajek.scannerapp.ScannerApp;
+import com.bretahajek.scannerapp.db.Document;
 import com.bretahajek.scannerapp.db.Tag;
 
 import java.util.List;
@@ -39,7 +40,15 @@ public class TagListViewModel extends AndroidViewModel {
         return mObservableTags;
     }
 
+    public LiveData<List<Tag>> getDocumentTags(final Document document) {
+        return mRepository.getDocumentTags(document);
+    }
+
     public void createTag(Tag tag) {
         mRepository.insertTags(tag);
+    }
+
+    public void updateDocumentTags(Document document, List<Tag> tags) {
+        mRepository.updateDocumentTagJoin(document, tags);
     }
 }

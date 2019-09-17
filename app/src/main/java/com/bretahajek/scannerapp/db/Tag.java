@@ -8,6 +8,7 @@ import androidx.room.PrimaryKey;
 
 @Entity
 public class Tag {
+    // TODO: Document count
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "id")
     public int id;
@@ -16,20 +17,15 @@ public class Tag {
     @NonNull
     public String name;
 
-    @ColumnInfo(name = "document_count")
-    public int documentCount;
-
     @Ignore
     public boolean state;
 
-    public Tag(final String name, final int documentCount) {
+    public Tag(final String name) {
         this.name = name;
-        this.documentCount = documentCount;
     }
 
-    public Tag(final String name, final int documentCount, final boolean state) {
+    public Tag(final String name, final boolean state) {
         this.name = name;
-        this.documentCount = documentCount;
         this.state = state;
     }
 
@@ -46,11 +42,11 @@ public class Tag {
         return name;
     }
 
-    public int getDocumentCount() {
-        return documentCount;
-    }
-
     public boolean isState() {
         return state;
+    }
+
+    public void setState(boolean state) {
+        this.state = state;
     }
 }

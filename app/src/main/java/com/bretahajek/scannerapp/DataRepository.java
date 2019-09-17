@@ -8,6 +8,7 @@ import androidx.lifecycle.Observer;
 
 import com.bretahajek.scannerapp.db.AppDatabase;
 import com.bretahajek.scannerapp.db.Document;
+import com.bretahajek.scannerapp.db.DocumentTagJoin;
 import com.bretahajek.scannerapp.db.Tag;
 
 import org.apache.commons.io.FileUtils;
@@ -100,6 +101,10 @@ public class DataRepository {
         return mDatabase.tagDao().getAll();
     }
 
+    public LiveData<List<Tag>> getDocumentTags(final Document document) {
+        return mDatabase.documentTagJoinDao().getTagsForDocument(document.getId());
+    }
+
     public void insertTags(final Tag... tags) {
         mExecutors.diskIO().execute(new Runnable() {
             @Override
@@ -107,5 +112,22 @@ public class DataRepository {
                 mDatabase.tagDao().insertAll(tags);
             }
         });
+    }
+
+    public void updateDocumentTagJoin(final Document document, final List<Tag> tags) {
+        mExecutors.diskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                for (Tag tag : tags) {
+                    DocumentTagJoin docTagJoin = new DocumentTagJoin(document.getId(), tag.getId());
+                    if (tag.isState()) {
+                        mDatabase.documentTagJoinDao().insert(docTagJoin);
+                    } else {
+                        mDatabase.documentTagJoinDao().delete(docTagJoin);
+                    }
+                }
+            }
+        });
+
     }
 }
