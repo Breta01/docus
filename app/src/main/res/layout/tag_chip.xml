@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <variable
+            name="tag"
+            type="com.bretahajek.scannerapp.db.Tag" />
+
+        <variable
+            name="callback"
+            type="com.bretahajek.scannerapp.fragments.HomeFragment" />
+    </data>
+
+    <com.google.android.material.chip.Chip
+        android:id="@+id/tagChip"
+        style="@style/Widget.MaterialComponents.Chip.Filter"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:checkable="true"
+        android:text="@{tag.getName()}"
+        android:onCheckedChanged="@{(v, b) -> callback.onTagCheckedChanged(tag, b)}"
+        app:chipBackgroundColor="@color/chip_state_background"
+        tools:text="@{tag.getName()}" />
+
+</layout>

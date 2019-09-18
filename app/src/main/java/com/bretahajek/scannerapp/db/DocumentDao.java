@@ -24,6 +24,21 @@ public interface DocumentDao {
     @Query("SELECT * FROM document WHERE name LIKE '%' || :query || '%'")
     LiveData<List<Document>> searchAll(String query);
 
+    @Query("SELECT d.id, d.name, d.folder, d.page_count, d.creation_date FROM document AS d " +
+            "INNER JOIN ( " +
+            "SELECT document_id FROM document_tag_join WHERE tag_id IN (:tagIds) " +
+            "GROUP BY document_id HAVING COUNT(*) > :minMatchCount - 1) AS j " +
+            "ON j.document_id = id")
+    LiveData<List<Document>> getAllWithTags(int[] tagIds, int minMatchCount);
+
+    @Query("SELECT d.id, d.name, d.folder, d.page_count, d.creation_date FROM document AS d " +
+            "INNER JOIN ( " +
+            "SELECT document_id FROM document_tag_join WHERE tag_id IN (:tagIds) " +
+            "GROUP BY document_id HAVING COUNT(*) > :minMatchCount - 1) AS j " +
+            "ON j.document_id = id " +
+            "WHERE d.name LIKE '%' || :query || '%'")
+    LiveData<List<Document>> searchAllWithTags(String query, int[] tagIds, int minMatchCount);
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertAll(Document... documents);
 

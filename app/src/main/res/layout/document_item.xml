@@ -23,14 +23,14 @@
         android:foreground="?android:attr/selectableItemBackground"
         android:minHeight="@dimen/document_item_min_height"
         android:onClick="@{() ->  callback.onClick(document)}"
+        android:longClickable="true"
         android:orientation="horizontal"
         app:cardUseCompatPadding="true">
 
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/item_horizontal_margin"
-            android:layout_marginEnd="@dimen/item_horizontal_margin">
+            android:layout_margin="@dimen/item_horizontal_margin">
 
             <TextView
                 android:id="@+id/name"
@@ -38,20 +38,34 @@
                 android:layout_height="wrap_content"
                 android:contentDescription="Document name"
                 android:text="@{document.getName()}"
-                android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:textColor="@android:color/primary_text_light_nodisable" />
 
             <TextView
+                android:id="@+id/creation_date"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_marginEnd="5dp"
+                android:layout_below="@id/name"
                 android:text="@{document.getFormatedDate()}" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/name"
+                android:layout_below="@id/creation_date"
                 android:text="@{@string/document_page_count(document.getPageCount())}" />
+
+            <TextView
+                android:id="@+id/dropdown_menu"
+                style="@android:style/Widget.TextView.PopupMenu"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentEnd="true"
+                android:background="?android:attr/selectableItemBackground"
+                android:clickable="true"
+                android:gravity="center"
+                android:text="&#8942;" />
+
         </RelativeLayout>
 
     </androidx.cardview.widget.CardView>

@@ -1,6 +1,7 @@
 package com.bretahajek.scannerapp.ui;
 
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.Nullable;
@@ -18,10 +19,10 @@ public class DocumentAdapter extends RecyclerView.Adapter<DocumentAdapter.Docume
     List<? extends Document> mDocumentList;
 
     @Nullable
-    private final DocumentClickCallback mProductClickCallback;
+    private final DocumentClickCallback mDocumentClickCallback;
 
     public DocumentAdapter(@Nullable DocumentClickCallback clickCallback) {
-        mProductClickCallback = clickCallback;
+        mDocumentClickCallback = clickCallback;
         setHasStableIds(true);
     }
 
@@ -49,13 +50,13 @@ public class DocumentAdapter extends RecyclerView.Adapter<DocumentAdapter.Docume
 
                 @Override
                 public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
-                    Document newProduct = documentList.get(newItemPosition);
-                    Document oldProduct = mDocumentList.get(oldItemPosition);
-                    return newProduct.getId() == oldProduct.getId()
-                            && newProduct.getName() == oldProduct.getName()
-                            && newProduct.getFolder() == oldProduct.getFolder()
-                            && newProduct.getPageCount() == oldProduct.getPageCount()
-                            && newProduct.getCreationDate() == oldProduct.getCreationDate();
+                    Document newDocument = documentList.get(newItemPosition);
+                    Document oldDocument = mDocumentList.get(oldItemPosition);
+                    return newDocument.getId() == oldDocument.getId()
+                            && newDocument.getPageCount() == oldDocument.getPageCount()
+                            && newDocument.getName().equals(oldDocument.getName())
+                            && newDocument.getFolder().equals(oldDocument.getFolder())
+                            && newDocument.getCreationDate().equals(oldDocument.getCreationDate());
                 }
             });
             mDocumentList = documentList;
@@ -68,13 +69,28 @@ public class DocumentAdapter extends RecyclerView.Adapter<DocumentAdapter.Docume
         DocumentItemBinding binding = DataBindingUtil
                 .inflate(LayoutInflater.from(parent.getContext()), R.layout.document_item,
                         parent, false);
-        binding.setCallback(mProductClickCallback);
+        binding.setCallback(mDocumentClickCallback);
         return new DocumentViewHolder(binding);
     }
 
     @Override
-    public void onBindViewHolder(DocumentViewHolder holder, int position) {
+    public void onBindViewHolder(final DocumentViewHolder holder, final int position) {
         holder.binding.setDocument(mDocumentList.get(position));
+        holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                mDocumentClickCallback.onLongClick(holder, view);
+                return false;
+            }
+        });
+
+        holder.binding.dropdownMenu.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mDocumentClickCallback.onMenuClick(holder, holder.binding.dropdownMenu);
+            }
+        });
+
         holder.binding.executePendingBindings();
     }
 
@@ -88,9 +104,9 @@ public class DocumentAdapter extends RecyclerView.Adapter<DocumentAdapter.Docume
         return mDocumentList.get(position).getId();
     }
 
-    static class DocumentViewHolder extends RecyclerView.ViewHolder {
+    public static class DocumentViewHolder extends RecyclerView.ViewHolder {
 
-        final DocumentItemBinding binding;
+        public final DocumentItemBinding binding;
 
         public DocumentViewHolder(DocumentItemBinding binding) {
             super(binding.getRoot());

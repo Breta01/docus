@@ -1,13 +1,19 @@
 package com.bretahajek.scannerapp;
 
+import android.util.Log;
+
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.Observer;
 
 import com.bretahajek.scannerapp.db.AppDatabase;
 import com.bretahajek.scannerapp.db.Document;
+import com.bretahajek.scannerapp.db.DocumentTagJoin;
 import com.bretahajek.scannerapp.db.Tag;
 
+import org.apache.commons.io.FileUtils;
+
+import java.io.File;
 import java.util.List;
 
 public class DataRepository {
@@ -49,12 +55,21 @@ public class DataRepository {
         return mObservableDocuments;
     }
 
-    public Document findByName(final String name) {
-        return mDatabase.documentDao().findByName(name);
-    }
-
     public LiveData<List<Document>> searchDocuments(String query) {
         return mDatabase.documentDao().searchAll(query);
+    }
+
+    public LiveData<List<Document>> getDocumentsWithTags(int[] tagIds, int minMatchCount) {
+        return mDatabase.documentDao().getAllWithTags(tagIds, minMatchCount);
+    }
+
+    public LiveData<List<Document>> searchDocumentsWithTags(
+            String query, int[] tagIds, int minMatchCount) {
+        return mDatabase.documentDao().searchAllWithTags(query, tagIds, minMatchCount);
+    }
+
+    public Document findByName(final String name) {
+        return mDatabase.documentDao().findByName(name);
     }
 
     public void insertDocuments(final Document... documents) {
@@ -75,7 +90,53 @@ public class DataRepository {
         });
     }
 
+    public void deleteDocument(final Document document, final File deleteFolder) {
+        mExecutors.diskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                if (deleteFolder != null) {
+                    try {
+                        FileUtils.deleteDirectory(deleteFolder);
+                    } catch (Exception e) {
+                        Log.e("Data Repository", "Unable to delete document.");
+                    }
+                }
+                mDatabase.documentDao().delete(document);
+            }
+        });
+    }
+
     public LiveData<List<Tag>> getTags() {
         return mDatabase.tagDao().getAll();
+    }
+
+    public LiveData<List<Tag>> getDocumentTags(final Document document) {
+        return mDatabase.documentTagJoinDao().getTagsForDocument(document.getId());
+    }
+
+    public void insertTags(final Tag... tags) {
+        mExecutors.diskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                mDatabase.tagDao().insertAll(tags);
+            }
+        });
+    }
+
+    public void updateDocumentTagJoin(final Document document, final List<Tag> tags) {
+        mExecutors.diskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                for (Tag tag : tags) {
+                    DocumentTagJoin docTagJoin = new DocumentTagJoin(document.getId(), tag.getId());
+                    if (tag.isState()) {
+                        mDatabase.documentTagJoinDao().insert(docTagJoin);
+                    } else {
+                        mDatabase.documentTagJoinDao().delete(docTagJoin);
+                    }
+                }
+            }
+        });
+
     }
 }
