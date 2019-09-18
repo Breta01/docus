@@ -7,7 +7,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -28,6 +27,7 @@ import androidx.navigation.Navigation;
 
 import com.bretahajek.scannerapp.R;
 import com.bretahajek.scannerapp.databinding.FragmentHomeBinding;
+import com.bretahajek.scannerapp.databinding.TagChipBinding;
 import com.bretahajek.scannerapp.databinding.TagsDialogBinding;
 import com.bretahajek.scannerapp.db.Document;
 import com.bretahajek.scannerapp.db.Tag;
@@ -85,6 +85,10 @@ public class HomeFragment extends Fragment {
         mDocumentAdapter = new DocumentAdapter(mDocumentClickCallback);
         mBinding.documentsList.setAdapter(mDocumentAdapter);
 
+        if (documentViewModel != null) {
+            documentViewModel.clearFilterTags();
+        }
+
         return mBinding.getRoot();
     }
 
@@ -107,8 +111,6 @@ public class HomeFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
         documentViewModel = new ViewModelProvider(this).get(DocumentListViewModel.class);
         tagViewModel = new ViewModelProvider(this).get(TagListViewModel.class);
-
-        // TODO: Add tags...
 
         mBinding.searchView.setOnQueryTextListener(
                 new android.widget.SearchView.OnQueryTextListener() {
@@ -135,6 +137,17 @@ public class HomeFragment extends Fragment {
 
         subscribeUi(documentViewModel.getDocuments());
         subsribeTagsUi(tagViewModel.getTags());
+    }
+
+    private void inflateTags(List<Tag> tagList) {
+        for (Tag tag : tagList) {
+            final TagChipBinding binding = DataBindingUtil
+                    .inflate(requireActivity().getLayoutInflater(), R.layout.tag_chip,
+                            null, false);
+            binding.setTag(tag);
+            binding.setCallback(this);
+            mBinding.tagGroup.addView(binding.getRoot());
+        }
     }
 
     @Override
@@ -170,6 +183,12 @@ public class HomeFragment extends Fragment {
             @Override
             public void onChanged(@Nullable List<Tag> myTags) {
                 if (myTags != null) {
+                    if (mTagAdapter.getItemCount() < myTags.size()) {
+                        // Add new tags to list
+                        // TODO: Implement removing
+                        inflateTags(myTags.subList(mTagAdapter.getItemCount(), myTags.size()));
+                    }
+
                     mTagAdapter.setTagList(myTags);
                     mBinding.executePendingBindings();
                 }
@@ -185,7 +204,6 @@ public class HomeFragment extends Fragment {
                     mTagAdapter.setDocumentTagList(myTags);
                     // Remove observer after loading - need them only on spawn of dialog
                     liveTagData.removeObserver(this);
-//                    liveTagData.removeObserver(this);
                 }
             }
         });
@@ -213,14 +231,12 @@ public class HomeFragment extends Fragment {
             }
         });
 
-
         builder.setView(binding.getRoot());
 
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-//                tagViewModel.getDocumentTags(document).removeObservers(getActivity());
                 tagViewModel.updateDocumentTags(document, mTagAdapter.getTagList());
-
+                mBinding.executePendingBindings();
             }
         });
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -231,7 +247,6 @@ public class HomeFragment extends Fragment {
         builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
             @Override
             public void onDismiss(DialogInterface dialogInterface) {
-                Log.i("Dismiss", "can");
                 mTagAdapter.clearTagStates();
             }
         });
@@ -285,4 +300,9 @@ public class HomeFragment extends Fragment {
             buildPopupMenu(viewHolder, bindView);
         }
     };
+
+    public void onTagCheckedChanged(Tag tag, boolean isChecked) {
+        documentViewModel.onTagCheckedChanged(tag, isChecked);
+        subscribeUi(documentViewModel.getDocuments());
+    }
 }

@@ -55,12 +55,21 @@ public class DataRepository {
         return mObservableDocuments;
     }
 
-    public Document findByName(final String name) {
-        return mDatabase.documentDao().findByName(name);
-    }
-
     public LiveData<List<Document>> searchDocuments(String query) {
         return mDatabase.documentDao().searchAll(query);
+    }
+
+    public LiveData<List<Document>> getDocumentsWithTags(int[] tagIds, int minMatchCount) {
+        return mDatabase.documentDao().getAllWithTags(tagIds, minMatchCount);
+    }
+
+    public LiveData<List<Document>> searchDocumentsWithTags(
+            String query, int[] tagIds, int minMatchCount) {
+        return mDatabase.documentDao().searchAllWithTags(query, tagIds, minMatchCount);
+    }
+
+    public Document findByName(final String name) {
+        return mDatabase.documentDao().findByName(name);
     }
 
     public void insertDocuments(final Document... documents) {

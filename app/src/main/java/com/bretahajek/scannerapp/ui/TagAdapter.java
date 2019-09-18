@@ -1,6 +1,5 @@
 package com.bretahajek.scannerapp.ui;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
@@ -33,11 +32,6 @@ public class TagAdapter extends RecyclerView.Adapter<TagAdapter.TagViewHolder> {
                 t.setState(false);
             }
         }
-        for (Tag t : mTagList) {
-
-        }
-        Log.i("Clear", "cl");
-        notifyItemRangeChanged(0, mTagList.size());
     }
 
     public void setDocumentTagList(final List<Tag> tagList) {

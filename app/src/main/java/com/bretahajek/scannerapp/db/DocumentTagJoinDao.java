@@ -17,15 +17,15 @@ public interface DocumentTagJoinDao {
     @Delete
     void delete(DocumentTagJoin documentTagJoin);
 
-    @Query("SELECT * FROM document " +
+    @Query("SELECT d.id, d.name, d.page_count, d.folder, d.creation_date FROM document AS d " +
             "INNER JOIN document_tag_join " +
-            "ON document.id=document_tag_join.document_id " +
+            "ON d.id=document_tag_join.document_id " +
             "WHERE document_tag_join.tag_id=:tagId")
     LiveData<List<Document>> getDocumentsForTag(final int tagId);
 
-    @Query("SELECT * FROM tag " +
+    @Query("SELECT t.id, t.name FROM tag AS t " +
             "INNER JOIN document_tag_join " +
-            "ON tag.id=document_tag_join.tag_id " +
+            "ON t.id=document_tag_join.tag_id " +
             "WHERE document_tag_join.document_id=:documentId")
     LiveData<List<Tag>> getTagsForDocument(final int documentId);
 
