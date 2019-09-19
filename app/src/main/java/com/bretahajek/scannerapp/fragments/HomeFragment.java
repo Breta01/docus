@@ -5,18 +5,23 @@ import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.webkit.MimeTypeMap;
 import android.widget.PopupMenu;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
@@ -25,6 +30,8 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 
+import com.bretahajek.scannerapp.AppExecutors;
+import com.bretahajek.scannerapp.BuildConfig;
 import com.bretahajek.scannerapp.R;
 import com.bretahajek.scannerapp.databinding.FragmentHomeBinding;
 import com.bretahajek.scannerapp.databinding.TagChipBinding;
@@ -34,6 +41,7 @@ import com.bretahajek.scannerapp.db.Tag;
 import com.bretahajek.scannerapp.ui.DocumentAdapter;
 import com.bretahajek.scannerapp.ui.DocumentClickCallback;
 import com.bretahajek.scannerapp.ui.TagAdapter;
+import com.bretahajek.scannerapp.utils.Exporter;
 import com.bretahajek.scannerapp.viewmodel.DocumentListViewModel;
 import com.bretahajek.scannerapp.viewmodel.TagListViewModel;
 
@@ -254,6 +262,56 @@ public class HomeFragment extends Fragment {
         builder.create().show();
     }
 
+    private void showHideProgressBar(boolean show) {
+        if (show) {
+            mBinding.progressBar.setVisibility(View.VISIBLE);
+            getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                    WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+        } else {
+            mBinding.progressBar.setVisibility(View.GONE);
+            getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+        }
+    }
+
+    private void exportDocument(Document document) {
+        final File documentFolder = new File(
+                getActivity().getExternalFilesDir(null), document.getFolder());
+        final File output = new File(
+                documentFolder, document.getFolder().split("-")[0] + ".pdf");
+
+        showHideProgressBar(true);
+
+        AppExecutors.getInstance().diskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                final File out = Exporter.exportAsPdf(documentFolder, output);
+
+                if (out != null) {
+                    Uri uri = FileProvider.getUriForFile(
+                            getContext(), BuildConfig.APPLICATION_ID + ".provider", out);
+                    Intent intent = new Intent()
+                            .setAction(Intent.ACTION_SEND)
+                            .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                            .setType(MimeTypeMap.getSingleton().getMimeTypeFromExtension("pdf"))
+                            .putExtra(Intent.EXTRA_STREAM, uri);
+
+                    AppExecutors.getInstance().mainThread().execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            showHideProgressBar(false);
+                        }
+                    });
+
+                    startActivity(Intent.createChooser(intent, "Share exported file."));
+                } else {
+                    // TODO: Handle errors, retry
+                }
+            }
+        });
+
+
+    }
+
     private void buildPopupMenu(DocumentAdapter.DocumentViewHolder holder, View bindView) {
         PopupMenu menu = new PopupMenu(getContext(), bindView);
         menu.inflate(R.menu.document_card_menu);
@@ -263,7 +321,9 @@ public class HomeFragment extends Fragment {
             @Override
             public boolean onMenuItemClick(MenuItem menuItem) {
                 switch (menuItem.getItemId()) {
+                    // TODO: Add rename button
                     case R.id.dc_menu_export:
+                        exportDocument(document);
                         break;
                     case R.id.dc_menu_tags:
                         buildTagsDialog(document);

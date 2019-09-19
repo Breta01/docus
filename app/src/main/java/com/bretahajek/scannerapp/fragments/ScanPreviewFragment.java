@@ -174,7 +174,7 @@ public class ScanPreviewFragment extends Fragment {
         String convertedString = Normalizer
                 .normalize(s, Normalizer.Form.NFD)
                 .replaceAll("[^\\p{ASCII}]", "")
-                .replaceAll("[^a-zA-Z0-9-_/\\.]", "_");
+                .replaceAll("[^a-zA-Z0-9_/\\.]", "_");
         convertedString = convertedString.substring(0, Math.min(convertedString.length(), 100));
         String timestamp = new SimpleDateFormat("yyyyMMdd-HHmmss").format(new Date());
         return convertedString + "-" + timestamp;
