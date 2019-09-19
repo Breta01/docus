@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -123,11 +124,7 @@ public class HomeFragment extends Fragment {
         mBinding.searchView.setOnQueryTextListener(
                 new android.widget.SearchView.OnQueryTextListener() {
                     private void updateSelectedDocuments(String query) {
-                        if (query == null || query.isEmpty()) {
-                            subscribeUi(documentViewModel.getDocuments());
-                        } else {
-                            subscribeUi(documentViewModel.searchDocuments(query));
-                        }
+                        documentViewModel.searchDocuments(query);
                     }
 
                     @Override
@@ -205,6 +202,7 @@ public class HomeFragment extends Fragment {
     }
 
     private void subsribeDocumentTagsUi(final LiveData<List<Tag>> liveTagData) {
+        // TODO: Change updating
         liveTagData.observe(this, new Observer<List<Tag>>() {
             @Override
             public void onChanged(@Nullable List<Tag> myTags) {
@@ -244,7 +242,6 @@ public class HomeFragment extends Fragment {
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 tagViewModel.updateDocumentTags(document, mTagAdapter.getTagList());
-                mBinding.executePendingBindings();
             }
         });
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -362,7 +359,7 @@ public class HomeFragment extends Fragment {
     };
 
     public void onTagCheckedChanged(Tag tag, boolean isChecked) {
+        Log.i("Check", tag.getName());
         documentViewModel.onTagCheckedChanged(tag, isChecked);
-        subscribeUi(documentViewModel.getDocuments());
     }
 }
