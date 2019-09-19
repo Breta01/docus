@@ -28,6 +28,10 @@ android {
                     'proguard-rules.pro'
         }
     }
+    compileOptions {
+        sourceCompatibility 1.8
+        targetCompatibility 1.8
+    }
     // DataBinding into layout
     dataBinding {
         enabled true
