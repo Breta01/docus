@@ -207,6 +207,7 @@ public class HomeFragment extends Fragment {
             @Override
             public void onChanged(@Nullable List<Tag> myTags) {
                 if (myTags != null) {
+                    mTagAdapter.clearTagStates();
                     mTagAdapter.setDocumentTagList(myTags);
                     // Remove observer after loading - need them only on spawn of dialog
                     liveTagData.removeObserver(this);
@@ -328,7 +329,7 @@ public class HomeFragment extends Fragment {
                     case R.id.dc_menu_delete:
                         // TODO: "Are you sure" dialog
                         File deleteFolder = new File(
-                                getContext().getExternalFilesDir(null), document.getFolder());
+                                requireContext().getExternalFilesDir(null), document.getFolder());
                         documentViewModel.deleteDocument(document, deleteFolder);
                         break;
                 }

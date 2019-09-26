@@ -24,7 +24,7 @@ public class PageDetector {
     private static final String TAG = "PageDetector";
     private static int E_min = 200;
     private static int E_max = 250;
-    private static int BF_diameter = 9;
+    private static int BF_diameter = 5;
     private static int BF_sigmaColor = 75;
     private static int BF_sigmaSpace = 75;
     private static int AT_blockSize = 115;
@@ -97,7 +97,7 @@ public class PageDetector {
 
         int height = edges.rows();
         int width = edges.cols();
-        double minArea = height * width * 0.5;
+        double minArea = height * width * 0.2;
         double maxArea = (width - 2 * borderSize) * (height - 2 * borderSize);
 
         double area = minArea;

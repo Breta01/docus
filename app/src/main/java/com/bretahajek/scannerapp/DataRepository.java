@@ -97,11 +97,11 @@ public class DataRepository {
                 if (deleteFolder != null) {
                     try {
                         FileUtils.deleteDirectory(deleteFolder);
+                        mDatabase.documentDao().delete(document);
                     } catch (Exception e) {
                         Log.e("Data Repository", "Unable to delete document.");
                     }
                 }
-                mDatabase.documentDao().delete(document);
             }
         });
     }
@@ -128,11 +128,15 @@ public class DataRepository {
             @Override
             public void run() {
                 for (Tag tag : tags) {
-                    DocumentTagJoin docTagJoin = new DocumentTagJoin(document.getId(), tag.getId());
-                    if (tag.isState()) {
-                        mDatabase.documentTagJoinDao().insert(docTagJoin);
-                    } else {
-                        mDatabase.documentTagJoinDao().delete(docTagJoin);
+                    if (tag.isChanged()) {
+                        DocumentTagJoin docTagJoin = new DocumentTagJoin(
+                                document.getId(), tag.getId());
+
+                        if (tag.isState()) {
+                            mDatabase.documentTagJoinDao().insert(docTagJoin);
+                        } else {
+                            mDatabase.documentTagJoinDao().delete(docTagJoin);
+                        }
                     }
                 }
             }

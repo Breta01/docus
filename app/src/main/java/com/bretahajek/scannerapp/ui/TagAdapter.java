@@ -30,6 +30,7 @@ public class TagAdapter extends RecyclerView.Adapter<TagAdapter.TagViewHolder> {
         if (mTagList != null) {
             for (Tag t : mTagList) {
                 t.setState(false);
+                t.changed = false;
             }
         }
     }
@@ -43,6 +44,8 @@ public class TagAdapter extends RecyclerView.Adapter<TagAdapter.TagViewHolder> {
                 if (t.getId() == mTagList.get(i).getId()
                         && t.getName().equals(mTagList.get(i).getName())) {
                     t.setState(true);
+
+                    mTagList.get(i).setState(true);
                     mTagList.set(i, t);
                     notifyItemChanged(i, t);
                 }

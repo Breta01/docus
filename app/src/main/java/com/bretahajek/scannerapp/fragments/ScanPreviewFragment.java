@@ -44,6 +44,7 @@ import java.util.Date;
 public class ScanPreviewFragment extends Fragment {
     private String documentName;
     private String imagePath;
+    private boolean createNew = false;
 
     private ImageView scanPreview;
     private boolean imageReady = false;  // Check if image is ready for moving
@@ -61,8 +62,9 @@ public class ScanPreviewFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        documentName = ScanPreviewFragmentArgs.fromBundle(getArguments()).getDocumentName();
         imagePath = ScanPreviewFragmentArgs.fromBundle(getArguments()).getImagePath();
+        documentName = ScanPreviewFragmentArgs.fromBundle(getArguments()).getDocumentName();
+        createNew = (documentName == null);
 
         // Run cropping in background
         new asyncScanPreview().execute(imagePath);
@@ -185,8 +187,8 @@ public class ScanPreviewFragment extends Fragment {
             @Override
             public void run() {
                 Document document = dataRepository.findByName(documentName);
-                boolean created = (document == null);
-                if (document == null) {
+                boolean create = (document == null) || createNew;
+                if (create) {
                     String documentString = stringToDirectory(documentName);
                     document = new Document(documentName, documentString, new Date(), 1);
                 } else {
@@ -225,7 +227,7 @@ public class ScanPreviewFragment extends Fragment {
                         buildDialog(true);
                     }
 
-                    if (created) {
+                    if (create) {
                         dataRepository.insertDocuments(document);
                     } else {
                         dataRepository.updateDocument(document);

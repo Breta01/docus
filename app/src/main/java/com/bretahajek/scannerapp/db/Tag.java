@@ -20,17 +20,24 @@ public class Tag {
     @Ignore
     public boolean state;
 
+    @Ignore
+    public boolean changed;
+
     public Tag(final String name) {
         this.name = name;
+        this.state = false;
+        this.changed = false;
     }
 
     public Tag(final String name, final boolean state) {
         this.name = name;
         this.state = state;
+        this.changed = false;
     }
 
     public void switchState() {
         state = !state;
+        changed = true;
     }
 
     public int getId() {
@@ -44,6 +51,10 @@ public class Tag {
 
     public boolean isState() {
         return state;
+    }
+
+    public boolean isChanged() {
+        return changed;
     }
 
     public void setState(boolean state) {
