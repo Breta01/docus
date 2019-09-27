@@ -20,19 +20,19 @@ import java.util.List;
 
 
 public class PageDetector {
-    public static final int SMALL_HEIGHT = 200;
+    public static final int SMALL_HEIGHT = 600;
 
     private static final String TAG = "PageDetector";
-    private static int E_min = 200;
-    private static int E_max = 250;
+    private static int E_min = 80;
+    private static int E_max = 120;
     private static int BF_diameter = 5;
     private static int BF_sigmaColor = 75;
     private static int BF_sigmaSpace = 75;
-    private static int AT_blockSize = 115;
+    private static int AT_blockSize = 101;
     private static int AT_C = 4;
     private static int MB_ksize = 5;
-    private static Size ME_kernel = new Size(11, 5);
-    private static int borderSize = 0;
+    private static Size ME_kernel = new Size(5, 5);
+    private static int borderSize = 5;
 
 
     public PageDetector() {
@@ -52,9 +52,9 @@ public class PageDetector {
         Imgproc.resize(image, smallImage, new Size(image.width() / ratio, SMALL_HEIGHT));
 
         Mat imageEdges = edges(smallImage, E_min, E_max);
-//        Imgproc.morphologyEx(imageEdges, imageEdges,
-//                Imgproc.MORPH_CLOSE,
-//                Mat.ones(ME_kernel, CvType.CV_8U));
+        Imgproc.morphologyEx(imageEdges, imageEdges,
+                Imgproc.MORPH_CLOSE,
+                Mat.ones(ME_kernel, CvType.CV_8U));
 
         MatOfPoint pageContour = findPageContour(imageEdges, smallImage);
 
@@ -69,23 +69,34 @@ public class PageDetector {
                 BF_sigmaColor,
                 BF_sigmaSpace);
 
-//        Imgproc.medianBlur(tmpImage, image,
-//                MB_ksize);
+        Imgproc.medianBlur(tmpImage, image,
+                MB_ksize);
+
+        Integer[] center = new Integer[]{image.width() / 2, image.height() / 2};
+        Rect centerRect = new Rect(center[0] - 20, center[1] - 20, 40, 40);
+        Scalar targetMean = Core.mean(image.submat(centerRect));
+        Scalar lower = new Scalar(targetMean.val[0] - 15);
+        Scalar upper = new Scalar(targetMean.val[0] + 15);
 
         Mat mask = Mat.zeros(image.size(), CvType.CV_8UC1);
-        Rect rect = new Rect(5, 5, image.width() - 10, image.height() - 10);
+        Core.inRange(image, lower, upper, mask);
+        Core.compare(mask, new Scalar(0), mask, Core.CMP_GE);
 
-        Mat newImage = Mat.zeros(image.size(), CvType.CV_8UC3);
-        Imgproc.cvtColor(tmpImage, newImage, Imgproc.COLOR_GRAY2RGB);
+        Imgproc.adaptiveThreshold(image, tmpImage,
+                255,
+                Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C,
+                Imgproc.THRESH_BINARY,
+                AT_blockSize,
+                AT_C);
 
-
-        Mat bgdModel = Mat.zeros(new Size(65, 1), CvType.CV_64FC1);
-        Mat fgdModel = Mat.zeros(new Size(65, 1), CvType.CV_64FC1);
-
-        Imgproc.grabCut(newImage, mask, rect, fgdModel, bgdModel, 1, Imgproc.GC_INIT_WITH_RECT);
-        Mat mask1 = mask.clone();
-        Core.compare(mask, new Scalar(3), mask1, Core.CMP_EQ);
-        return mask1;
+        tmpImage.copyTo(image, mask);
+        Core.copyMakeBorder(image, image,
+                borderSize,
+                borderSize,
+                borderSize,
+                borderSize,
+                Core.BORDER_CONSTANT);
+        return image;
     }
 
     private static MatOfPoint findPageContour(Mat edges, Mat img) {
@@ -96,7 +107,7 @@ public class PageDetector {
 
         int height = edges.rows();
         int width = edges.cols();
-        double minArea = height * width * 0.1;
+        double minArea = height * width * 0.4;
         double maxArea = (width - 2 * borderSize) * (height - 2 * borderSize);
 
         double area = minArea;
