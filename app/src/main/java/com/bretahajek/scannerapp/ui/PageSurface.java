@@ -23,7 +23,7 @@ public class PageSurface extends SurfaceView implements SurfaceHolder.Callback, 
     private int viewWidth;
     private int viewHeight;
 
-    private double velocity = 0.007;
+    private double velocity = 0.009;
     private Point[] targetCorners;
     private Point[] corners = new Point[]{
             new Point(0, 0),
