@@ -17,9 +17,9 @@
             android:background="@android:color/white"
             android:elevation="@dimen/topbar_elevation"
             android:gravity="center_horizontal|center_vertical"
-            android:text="Scanner App"
+            android:text="Docus"
             android:textAppearance="@style/TextAppearance.AppCompat.Title"
-            app:layout_constraintBottom_toBottomOf="@+id/button_camera"
+            app:layout_constraintBottom_toBottomOf="@id/search_view"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -28,13 +28,14 @@
             android:id="@+id/button_camera"
             style="@style/Widget.AppCompat.ImageButton"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="0dp"
             android:backgroundTint="#FFFFFF"
             android:contentDescription="Camera"
             android:elevation="@dimen/topbar_elevation"
             android:foregroundGravity="center_vertical|center_horizontal"
             android:scaleType="center"
-            android:src="@android:drawable/ic_menu_camera"
+            android:src="@drawable/ic_camera_alt_black_24dp"
+            app:layout_constraintBottom_toTopOf="@+id/documents_list"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 

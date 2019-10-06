@@ -5,11 +5,11 @@
 
         <variable
             name="tag"
-            type="com.bretahajek.scannerapp.db.Tag" />
+            type="com.bretahajek.docus.db.Tag" />
 
         <variable
             name="callback"
-            type="com.bretahajek.scannerapp.ui.TagAdapter" />
+            type="com.bretahajek.docus.ui.TagAdapter" />
     </data>
 
     <RelativeLayout
