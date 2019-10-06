@@ -1,2 +1,2 @@
 include ':app', ':opencv'
-rootProject.name='Scanner App'
+rootProject.name='Docus'

@@ -6,11 +6,11 @@
 
         <variable
             name="document"
-            type="com.bretahajek.scannerapp.db.Document" />
+            type="com.bretahajek.docus.db.Document" />
 
         <variable
             name="callback"
-            type="com.bretahajek.scannerapp.ui.DocumentClickCallback" />
+            type="com.bretahajek.docus.ui.DocumentClickCallback" />
     </data>
 
     <androidx.cardview.widget.CardView

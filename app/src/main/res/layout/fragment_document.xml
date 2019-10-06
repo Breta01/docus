@@ -8,13 +8,13 @@
     android:background="@android:color/black"
     tools:context=".fragments.DocumentFragment">
 
-    <com.bretahajek.scannerapp.ui.ExtendedViewPager
+    <com.bretahajek.docus.ui.ExtendedViewPager
         android:id="@+id/page_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:layout_editor_absoluteY="8dp">
 
-    </com.bretahajek.scannerapp.ui.ExtendedViewPager>
+    </com.bretahajek.docus.ui.ExtendedViewPager>
 
     <ImageButton
         android:id="@+id/document_go_back_button"

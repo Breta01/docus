@@ -26,4 +26,4 @@ Pro úspěšné skenování se doporučuje umístit dokument tak, aby se nacház
 Po pořízení fotky se zobrazí náhled s dialogem pro pojmenování dokumentu. Pro uložení dokumentu je nutné dokument pojmenovat. Dále je možné ukončit skenování nebo naskenovat další stránky, které budou zařazeny do stejného dokumentu.
 
 ## Pokročilé použití
-Všechny data aplikace se nacházejí ve složce `Android/data/com.bretahajek.scannerapp/files`. Zde jsou data roztříděná do složek podle dokumentů. Jméno složky, vždy pokud je to možné, co nejvíce odpovídá jménu dokumentu. Ve složce se nacházejí obrázky jednotlivých stránek. Po exportování dokumentu do PDF se zde objeví i exportovaný soubor.
+Všechny data aplikace se nacházejí ve složce `Android/data/docus/files`. Zde jsou data roztříděná do složek podle dokumentů. Jméno složky, vždy pokud je to možné, co nejvíce odpovídá jménu dokumentu. Ve složce se nacházejí obrázky jednotlivých stránek. Po exportování dokumentu do PDF se zde objeví i exportovaný soubor.

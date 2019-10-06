@@ -4,7 +4,7 @@ apply plugin: 'androidx.navigation.safeargs'
 android {
     compileSdkVersion 29
     defaultConfig {
-        applicationId "com.bretahajek.scannerapp"
+        applicationId "com.bretahajek.docus"
         minSdkVersion 21
         targetSdkVersion 29
         versionCode 1

@@ -7,11 +7,11 @@
 
         <variable
             name="tag"
-            type="com.bretahajek.scannerapp.db.Tag" />
+            type="com.bretahajek.docus.db.Tag" />
 
         <variable
             name="callback"
-            type="com.bretahajek.scannerapp.fragments.HomeFragment" />
+            type="com.bretahajek.docus.fragments.HomeFragment" />
     </data>
 
     <com.google.android.material.chip.Chip

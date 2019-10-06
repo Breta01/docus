@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/cameraFragment"
-        android:name="com.bretahajek.scannerapp.fragments.CameraFragment"
+        android:name="com.bretahajek.docus.fragments.CameraFragment"
         android:label="fragment_camera"
         tools:layout="@layout/fragment_camera">
 
@@ -32,7 +32,7 @@
 
     <fragment
         android:id="@+id/homeFragment"
-        android:name="com.bretahajek.scannerapp.fragments.HomeFragment"
+        android:name="com.bretahajek.docus.fragments.HomeFragment"
         android:label="HomeFragment">
 
         <action
@@ -45,7 +45,7 @@
 
     <fragment
         android:id="@+id/scanPreviewFragment"
-        android:name="com.bretahajek.scannerapp.fragments.ScanPreviewFragment"
+        android:name="com.bretahajek.docus.fragments.ScanPreviewFragment"
         android:label="fragment_scan_preview"
         tools:layout="@layout/fragment_scan_preview">
 
@@ -74,7 +74,7 @@
 
     <fragment
         android:id="@+id/documentFragment"
-        android:name="com.bretahajek.scannerapp.fragments.DocumentFragment"
+        android:name="com.bretahajek.docus.fragments.DocumentFragment"
         android:label="fragment_document"
         tools:layout="@layout/fragment_document">
 
