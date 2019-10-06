@@ -9,6 +9,9 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.InputType;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -45,6 +48,8 @@ import com.bretahajek.docus.ui.TagAdapter;
 import com.bretahajek.docus.utils.Exporter;
 import com.bretahajek.docus.viewmodel.DocumentListViewModel;
 import com.bretahajek.docus.viewmodel.TagListViewModel;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 
 import java.io.File;
 import java.util.List;
@@ -310,6 +315,58 @@ public class HomeFragment extends Fragment {
 
     }
 
+    private void renameDocument(Document document) {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        final TextInputEditText textInput = new TextInputEditText(requireContext());
+
+        final TextInputLayout inputLayout = new TextInputLayout(getContext());
+        inputLayout.setPadding(
+                getResources().getDimensionPixelOffset(R.dimen.dp_19),
+                0,
+                getResources().getDimensionPixelOffset(R.dimen.dp_19),
+                0
+        );
+
+        textInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_NORMAL);
+        textInput.setHint(R.string.doc_rename_hint);
+        textInput.setText(document.getName());
+        inputLayout.addView(textInput);
+
+        builder.setTitle("Rename Document: " + document.getName());
+        builder.setView(inputLayout);
+
+        builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                documentViewModel.renameDocument(document, textInput.getText().toString().trim());
+                dialog.cancel();
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                dialog.cancel();
+            }
+        });
+        AlertDialog dialog = builder.create();
+
+        textInput.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(true);
+            }
+        });
+
+        dialog.show();
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
+    }
+
     private void buildPopupMenu(DocumentAdapter.DocumentViewHolder holder, View bindView) {
         PopupMenu menu = new PopupMenu(getContext(), bindView);
         menu.inflate(R.menu.document_card_menu);
@@ -325,6 +382,9 @@ public class HomeFragment extends Fragment {
                         break;
                     case R.id.dc_menu_tags:
                         buildTagsDialog(document);
+                        break;
+                    case R.id.dc_rename:
+                        renameDocument(document);
                         break;
                     case R.id.dc_menu_delete:
                         // TODO: "Are you sure" dialog

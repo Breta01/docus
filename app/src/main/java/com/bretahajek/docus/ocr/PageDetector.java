@@ -75,8 +75,8 @@ public class PageDetector {
         Integer[] center = new Integer[]{image.width() / 2, image.height() / 2};
         Rect centerRect = new Rect(center[0] - 20, center[1] - 20, 40, 40);
         Scalar targetMean = Core.mean(image.submat(centerRect));
-        Scalar lower = new Scalar(targetMean.val[0] - 15);
-        Scalar upper = new Scalar(targetMean.val[0] + 15);
+        Scalar lower = new Scalar(targetMean.val[0] - 30);
+        Scalar upper = new Scalar(targetMean.val[0] + 30);
 
         Mat mask = Mat.zeros(image.size(), CvType.CV_8UC1);
         Core.inRange(image, lower, upper, mask);
