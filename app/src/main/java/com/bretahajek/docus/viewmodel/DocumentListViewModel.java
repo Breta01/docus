@@ -90,4 +90,14 @@ public class DocumentListViewModel extends AndroidViewModel {
         boolean b = (isChecked) ? filterTags.add(tag) : filterTags.remove(tag);
         updateSource(lastQuery);
     }
+
+    public void renameDocument(Document document, String newName) {
+        Document newDocument = new Document(
+                newName,
+                document.getFolder(),
+                document.getCreationDate(),
+                document.getPageCount());
+        newDocument.id = document.getId();
+        mRepository.updateDocument(newDocument);
+    }
 }

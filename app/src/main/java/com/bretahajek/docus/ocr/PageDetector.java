@@ -29,7 +29,7 @@ public class PageDetector {
     private static int BF_sigmaColor = 75;
     private static int BF_sigmaSpace = 75;
     private static int AT_blockSize = 101;
-    private static int AT_C = 4;
+    private static int AT_C = 3;
     private static int MB_ksize = 5;
     private static Size ME_kernel = new Size(5, 5);
     private static int borderSize = 5;
@@ -73,10 +73,10 @@ public class PageDetector {
                 MB_ksize);
 
         Integer[] center = new Integer[]{image.width() / 2, image.height() / 2};
-        Rect centerRect = new Rect(center[0] - 20, center[1] - 20, 40, 40);
+        Rect centerRect = new Rect(center[0] - 30, center[1] - 30, 60, 60);
         Scalar targetMean = Core.mean(image.submat(centerRect));
-        Scalar lower = new Scalar(targetMean.val[0] - 15);
-        Scalar upper = new Scalar(targetMean.val[0] + 15);
+        Scalar lower = new Scalar(targetMean.val[0] - 60);
+        Scalar upper = new Scalar(targetMean.val[0] + 60);
 
         Mat mask = Mat.zeros(image.size(), CvType.CV_8UC1);
         Core.inRange(image, lower, upper, mask);

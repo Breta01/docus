@@ -9,6 +9,10 @@
         android:title="Edit tags" />
 
     <item
+        android:id="@+id/dc_rename"
+        android:title="Rename" />
+
+    <item
         android:id="@+id/dc_menu_delete"
         android:title="Delete" />
 
