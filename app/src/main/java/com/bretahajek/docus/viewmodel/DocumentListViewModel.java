@@ -92,7 +92,12 @@ public class DocumentListViewModel extends AndroidViewModel {
     }
 
     public void renameDocument(Document document, String newName) {
-        document.name = newName;
-        mRepository.updateDocument(document);
+        Document newDocument = new Document(
+                newName,
+                document.getFolder(),
+                document.getCreationDate(),
+                document.getPageCount());
+        newDocument.id = document.getId();
+        mRepository.updateDocument(newDocument);
     }
 }
