@@ -13,3 +13,4 @@
 .externalNativeBuild
 .cxx
 opencv/build
+app/release
