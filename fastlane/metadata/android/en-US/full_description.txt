@@ -1,0 +1,3 @@
+The app that allows scanning and organizing documents.
+Including export in PDF and sharing with others.
+Completely free.
