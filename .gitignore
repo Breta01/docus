@@ -14,3 +14,4 @@
 .cxx
 opencv/build
 app/release
+app/release_arm

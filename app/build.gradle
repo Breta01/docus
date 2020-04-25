@@ -27,6 +27,14 @@ android {
                     'proguard-android-optimize.txt'),
                     'proguard-rules.pro'
         }
+        // Add new release type for publishing ARM only APK on github release
+        release_arm {
+            initWith release
+            matchingFallbacks = ['release']
+            ndk {
+                abiFilters 'armeabi-v7a','arm64-v8a'
+            }
+        }
     }
     compileOptions {
         sourceCompatibility 1.8
