@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Docus</string>
+    <string name="app_name" translatable="false">Docus</string>
 
     <string name="image_save_failed">Saving image failed. Please try again.</string>
     <string name="image_save_success">Image saved successfully.</string>
