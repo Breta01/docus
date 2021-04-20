@@ -1,11 +1,13 @@
 package com.bretahajek.docus.utils;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Paint;
-import android.graphics.Rect;
-import android.graphics.pdf.PdfDocument;
 import android.util.Log;
+
+import com.itextpdf.text.BadElementException;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Image;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.pdf.PdfWriter;
 
 import org.apache.commons.io.FilenameUtils;
 
@@ -34,30 +36,42 @@ public class Exporter {
             return null;
         }
 
-        PdfDocument document = new PdfDocument();
-
-        for (int i = 0; i < images.length; i++) {
-            Bitmap image = BitmapFactory.decodeFile(images[i].getAbsolutePath());
-
-            PdfDocument.PageInfo pageInfo = new PdfDocument.PageInfo.Builder(
-                    image.getWidth(), image.getHeight(), i + 1).create();
-            PdfDocument.Page page = document.startPage(pageInfo);
-            page.getCanvas().drawBitmap(
-                    image, null,
-                    new Rect(0, 0, image.getWidth(), image.getHeight()),
-                    new Paint());
-
-            document.finishPage(page);
-        }
+        Document document = new Document(PageSize.A4, 0, 0, 0, 0);
 
         try {
-            document.writeTo(new FileOutputStream(output));
-            return output;
+            PdfWriter.getInstance(document, new FileOutputStream(output));
         } catch (IOException e) {
             Log.e("Export PDF", e.toString());
             return null;
-        } finally {
-            document.close();
+        } catch (DocumentException e) {
+            Log.e("Export PDF", e.toString());
+            return null;
         }
+        document.open();
+
+        for (int i = 0; i < images.length; i++) {
+            try {
+                Image image = Image.getInstance(images[i].getAbsolutePath());
+
+                float scaler = ((document.getPageSize().getWidth() - document.leftMargin() - document.rightMargin() - 0) / image.getWidth()) * 100; // 0 means you have no indentation. If you have any, change it.
+                image.scalePercent(scaler);
+                image.setAlignment(Image.ALIGN_CENTER | Image.ALIGN_TOP);
+                image.setAbsolutePosition((document.getPageSize().getWidth() - image.getScaledWidth()) / 2.0f,
+                        (document.getPageSize().getHeight() - image.getScaledHeight()) / 2.0f);
+
+                document.add(image);
+                document.newPage();
+
+            } catch (BadElementException e) {
+                Log.e("Export PDF", e.toString());
+            } catch (IOException e) {
+                Log.e("Export PDF", e.toString());
+            } catch (DocumentException e) {
+                Log.e("Export PDF", e.toString());
+            }
+        }
+
+        document.close();
+        return output;
     }
 }
