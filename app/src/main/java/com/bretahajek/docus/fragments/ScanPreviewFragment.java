@@ -271,10 +271,17 @@ public class ScanPreviewFragment extends Fragment {
 
             image = PageDetector.getPage(image);
             // Scale image to reduce size
-            double maxHeight = 1754;
-            if (image.height() > maxHeight) {
-                double ratio = image.height() / maxHeight;
-                Imgproc.resize(image, image, new Size(image.width() / ratio, maxHeight));
+            double maxDimension = 1754;
+            if (image.height() > image.width()) {
+                if (image.height() > maxDimension) {
+                    double ratio = image.height() / maxDimension;
+                    Imgproc.resize(image, image, new Size(image.width() / ratio, maxDimension));
+                }
+            } else {
+                if (image.width() > maxDimension) {
+                    double ratio = image.width() / maxDimension;
+                    Imgproc.resize(image, image, new Size(maxDimension, image.height() / ratio));
+                }
             }
 
             Imgproc.cvtColor(image, rgbImage, Imgproc.COLOR_BGR2RGB);

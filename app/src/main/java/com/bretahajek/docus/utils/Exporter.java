@@ -7,6 +7,7 @@ import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Image;
 import com.itextpdf.text.PageSize;
+import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfWriter;
 
 import org.apache.commons.io.FilenameUtils;
@@ -52,15 +53,12 @@ public class Exporter {
         for (int i = 0; i < images.length; i++) {
             try {
                 Image image = Image.getInstance(images[i].getAbsolutePath());
-
-                float scaler = ((document.getPageSize().getWidth() - document.leftMargin() - document.rightMargin() - 0) / image.getWidth()) * 100; // 0 means you have no indentation. If you have any, change it.
-                image.scalePercent(scaler);
-                image.setAlignment(Image.ALIGN_CENTER | Image.ALIGN_TOP);
-                image.setAbsolutePosition((document.getPageSize().getWidth() - image.getScaledWidth()) / 2.0f,
-                        (document.getPageSize().getHeight() - image.getScaledHeight()) / 2.0f);
-
-                document.add(image);
+                image.scaleToFit(PageSize.A4);
+                image.setAlignment(Image.ALIGN_CENTER | Image.ALIGN_MIDDLE);
+                
+                document.setPageSize(new Rectangle(image.getPlainWidth(), image.getPlainHeight()));
                 document.newPage();
+                document.add(image);
 
             } catch (BadElementException e) {
                 Log.e("Export PDF", e.toString());
