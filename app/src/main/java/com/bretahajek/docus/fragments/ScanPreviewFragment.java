@@ -31,6 +31,7 @@ import com.google.android.material.textfield.TextInputLayout;
 import org.apache.commons.io.FileUtils;
 import org.opencv.android.Utils;
 import org.opencv.core.Mat;
+import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
@@ -269,6 +270,19 @@ public class ScanPreviewFragment extends Fragment {
             Mat rgbImage = Mat.zeros(image.size(), image.type());
 
             image = PageDetector.getPage(image);
+            // Scale image to reduce size
+            double maxDimension = 1754;
+            if (image.height() > image.width()) {
+                if (image.height() > maxDimension) {
+                    double ratio = image.height() / maxDimension;
+                    Imgproc.resize(image, image, new Size(image.width() / ratio, maxDimension));
+                }
+            } else {
+                if (image.width() > maxDimension) {
+                    double ratio = image.width() / maxDimension;
+                    Imgproc.resize(image, image, new Size(maxDimension, image.height() / ratio));
+                }
+            }
 
             Imgproc.cvtColor(image, rgbImage, Imgproc.COLOR_BGR2RGB);
             Bitmap bitmap = Bitmap.createBitmap(
