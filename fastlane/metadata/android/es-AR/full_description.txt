@@ -1,0 +1,3 @@
+Esta app te permite escanear y organizar documentos.
+Incluye la función de exportar a PDF y compartir con otros.
+Completamente gratis. 
