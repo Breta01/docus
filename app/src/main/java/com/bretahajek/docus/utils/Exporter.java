@@ -40,7 +40,8 @@ public class Exporter {
         Document document = new Document(PageSize.A4, 0, 0, 0, 0);
 
         try {
-            PdfWriter.getInstance(document, new FileOutputStream(output));
+            PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(output));
+            writer.setFullCompression();
         } catch (IOException e) {
             Log.e("Export PDF", e.toString());
             return null;

@@ -23,7 +23,7 @@
     <string name="edit_tags">Edit tags</string>
     <string name="rename">Rename</string>
     <string name="delete">Delete</string>
-    <string name="doc_empty_or_missing">Document is empty or doesn't exist.</string>
+    <string name="doc_empty_or_missing">Document is empty or doesn\'t exist.</string>
     <string name="finish">Finish</string>
     <string name="wrong_name_error">Unable to create document, please try different name.</string>
     <string name="adding_page">Adding the new page to the document.</string>
