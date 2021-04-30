@@ -11,14 +11,14 @@
     <string name="new_tag_hint">Nueva etiqueta</string>
     <string name="document_page_count">Páginas: %d</string>
 
-    <string name="back_button">Back button</string>
-    <string name="add_page">Add page</string>
+    <string name="back_button">Botón de retroceso</string>
+    <string name="add_page">Añadir página</string>
     <string name="add_tag">Add tag</string>
     <string name="set_tags">Set Tags</string>
     <string name="ok">OK</string>
-    <string name="cancel">Cancel</string>
-    <string name="save">Save</string>
-    <string name="share_file">Share exported file.</string>
+    <string name="cancel">Cancelar</string>
+    <string name="save">Guardar</string>
+    <string name="share_file">Comparta el archivo exportado.</string>
     <string name="rename_doc">Rename Document: </string>
     <string name="export">Export</string>
     <string name="edit_tags">Edit tags</string>
