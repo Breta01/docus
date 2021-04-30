@@ -57,7 +57,7 @@ public class DocumentFragment extends Fragment {
             // TODO: Document was probably deleted, solve that
             Toast.makeText(
                     getActivity().getBaseContext(),
-                    "Document is empty or doesn't exist.",
+                    R.string.doc_empty_or_missing,
                     Toast.LENGTH_SHORT).show();
             Navigation.findNavController(getActivity(), R.id.fragment_container).popBackStack();
         }

@@ -1,14 +1,15 @@
-<resources>
-    <string name="image_save_failed">Zapisywanie zdjęcia nie powiodło się. Proszę spróbwać ponownie.</string>
-    <string name="image_save_success">Zdjęcie zapisano pomyślnie.</string>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
+<!--Created by The Translator <https://play.google.com/store/apps/details?id=com.sunilpaulmathew.translator>-->
 
-    <string name="permission_notgranted">Wymagane uprawnienia nie zostały przyznane. Aplikacja może działać niepoprawnie</string>
-    <string name="scanned_image">Zeskanowany obraz</string>
-    <string name="doc_name_hint">Nazwa dokumentu</string>
-    <string name="doc_rename_hint">Nowa nazwa dokumentu</string>
-    <string name="new_tag_hint">Nowy tag</string>
-
-    <string name="document_page_count">Strony: %d</string>
+    <string name="image_save_failed">No se pudo guardar la imagen. Por favor
+ intentalo de nuevo.</string>
+    <string name="image_save_success">Imagen guardada exitosamente.</string>
+    <string name="permission_notgranted">Permisos no concedidos. La aplicación podría no funcionar correctamente.</string>
+    <string name="scanned_image">Imagen Escaneada</string>
+    <string name="doc_name_hint">Nombre del Documento</string>
+    <string name="doc_rename_hint">Nuevo nombre del Documento</string>
+    <string name="new_tag_hint">Nueva etiqueta</string>
+    <string name="document_page_count">Páginas: %d</string>
 
     <string name="back_button">Back button</string>
     <string name="add_page">Add page</string>

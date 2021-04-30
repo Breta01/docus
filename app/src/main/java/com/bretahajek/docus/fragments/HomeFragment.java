@@ -223,7 +223,7 @@ public class HomeFragment extends Fragment {
 
     private void buildTagsDialog(final Document document) {
         final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle("Set Tags - " + document.getName());
+        builder.setTitle(getString(R.string.set_tags) + " - " + document.getName());
 
         final TagsDialogBinding binding = DataBindingUtil
                 .inflate(requireActivity().getLayoutInflater(), R.layout.tags_dialog,
@@ -245,12 +245,12 @@ public class HomeFragment extends Fragment {
 
         builder.setView(binding.getRoot());
 
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 tagViewModel.updateDocumentTags(document, mTagAdapter.getTagList());
             }
         });
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 dialog.cancel();
             }
@@ -305,7 +305,7 @@ public class HomeFragment extends Fragment {
                         }
                     });
 
-                    startActivity(Intent.createChooser(intent, "Share exported file."));
+                    startActivity(Intent.createChooser(intent, getString(R.string.share_file)));
                 } else {
                     // TODO: Handle errors, retry
                 }
@@ -332,16 +332,16 @@ public class HomeFragment extends Fragment {
         textInput.setText(document.getName());
         inputLayout.addView(textInput);
 
-        builder.setTitle("Rename Document: " + document.getName());
+        builder.setTitle(getString(R.string.rename_doc) + document.getName());
         builder.setView(inputLayout);
 
-        builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(R.string.save, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 documentViewModel.renameDocument(document, textInput.getText().toString().trim());
                 dialog.cancel();
             }
         });
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 dialog.cancel();
             }
