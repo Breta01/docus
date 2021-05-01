@@ -218,9 +218,9 @@ public class CameraFragment extends Fragment {
     private void buildCameraUi() {
         // Go back button
         Button backButton = container.findViewById(R.id.button_back_home);
-        if (documentName != null) {
-            backButton.setText("Finish ");
-        }
+        if (documentName != null)
+            backButton.setText(R.string.finish);
+
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

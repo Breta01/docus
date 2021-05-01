@@ -36,7 +36,7 @@
                 android:id="@+id/name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:contentDescription="Document name"
+                android:contentDescription="@string/doc_name_hint"
                 android:text="@{document.getName()}"
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                 android:textColor="@android:color/primary_text_light_nodisable" />

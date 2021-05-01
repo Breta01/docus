@@ -23,7 +23,7 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:background="@android:color/transparent"
-        android:contentDescription="Back button"
+        android:contentDescription="@string/back_button"
         android:scaleType="center"
         android:src="?attr/actionModeCloseDrawable"
         android:tint="@android:color/white"

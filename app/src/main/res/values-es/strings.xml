@@ -1,0 +1,33 @@
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
+<!--Created by The Translator <https://play.google.com/store/apps/details?id=com.sunilpaulmathew.translator>-->
+
+    <string name="image_save_failed">No se pudo guardar la imagen. Por favor
+ intentalo de nuevo.</string>
+    <string name="image_save_success">Imagen guardada exitosamente.</string>
+    <string name="permission_notgranted">Permisos no concedidos. La aplicación podría no funcionar correctamente.</string>
+    <string name="scanned_image">Imagen Escaneada</string>
+    <string name="doc_name_hint">Nombre del Documento</string>
+    <string name="doc_rename_hint">Nuevo nombre del Documento</string>
+    <string name="new_tag_hint">Nueva etiqueta</string>
+    <string name="document_page_count">Páginas: %d</string>
+
+    <string name="back_button">Botón de retroceso</string>
+    <string name="add_page">Añadir página</string>
+    <string name="add_tag">Add tag</string>
+    <string name="set_tags">Set Tags</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancelar</string>
+    <string name="save">Guardar</string>
+    <string name="share_file">Comparta el archivo exportado.</string>
+    <string name="rename_doc">Rename Document: </string>
+    <string name="export">Export</string>
+    <string name="edit_tags">Edit tags</string>
+    <string name="rename">Rename</string>
+    <string name="delete">Delete</string>
+    <string name="doc_empty_or_missing">Document is empty or doesn\'t exist.</string>
+    <string name="finish">Finish</string>
+    <string name="wrong_name_error">Unable to create document, please try different name.</string>
+    <string name="adding_page">Adding the new page to the document.</string>
+    <string name="create_doc">Create New Document</string>
+    <string name="document">Document: </string>
+</resources>

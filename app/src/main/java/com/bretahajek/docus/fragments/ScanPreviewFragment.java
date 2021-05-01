@@ -104,17 +104,17 @@ public class ScanPreviewFragment extends Fragment {
             textInput.setHint(R.string.doc_name_hint);
             inputLayout.addView(textInput);
 
-            builder.setTitle("Create New Document");
+            builder.setTitle(R.string.create_doc);
             builder.setView(inputLayout);
             if (rebuild) {
-                builder.setMessage("Unable to create document, please try different name.");
+                builder.setMessage(R.string.wrong_name_error);
             }
         } else {
-            builder.setTitle("Document: " + documentName);
-            builder.setMessage("Adding the new page to the document.");
+            builder.setTitle(getString(R.string.document) + documentName);
+            builder.setMessage(R.string.adding_page);
         }
 
-        builder.setPositiveButton("Finish", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(R.string.finish, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 if (documentName == null) {
                     documentName = textInput.getText().toString().trim();
@@ -123,7 +123,7 @@ public class ScanPreviewFragment extends Fragment {
                 saveImageToDocument("home");
             }
         });
-        builder.setNeutralButton("Add page", new DialogInterface.OnClickListener() {
+        builder.setNeutralButton(R.string.add_page, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 if (documentName == null) {
                     documentName = textInput.getText().toString().trim();
@@ -132,7 +132,7 @@ public class ScanPreviewFragment extends Fragment {
                 saveImageToDocument("camera");
             }
         });
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 goBackToCamera(documentName);
             }

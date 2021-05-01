@@ -11,4 +11,26 @@
     <string name="new_tag_hint">New tag</string>
 
     <string name="document_page_count">Pages: %d</string>
+    <string name="back_button">Back button</string>
+    <string name="add_page">Add page</string>
+    <string name="add_tag">Add tag</string>
+    <string name="set_tags">Set Tags</string>
+
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
+    <string name="share_file">Share exported file.</string>
+    <string name="rename_doc">Rename Document: </string>
+    <!-- pop-up menu on document -->
+    <string name="export">Export</string>
+    <string name="edit_tags">Edit tags</string>
+    <string name="rename">Rename</string>
+    <string name="delete">Delete</string>
+
+    <string name="doc_empty_or_missing">Document is empty or doesn\'t exist.</string>
+    <string name="finish">Finish</string>
+    <string name="wrong_name_error">Unable to create document, please try different name.</string>
+    <string name="adding_page">Adding the new page to the document.</string>
+    <string name="create_doc">Create New Document</string>
+    <string name="document">Document: </string>
 </resources>
