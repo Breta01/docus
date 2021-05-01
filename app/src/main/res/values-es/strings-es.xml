@@ -1,0 +1,31 @@
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
+<!--Created by The Translator <https://play.google.com/store/apps/details?id=com.sunilpaulmathew.translator>-->
+
+    <string name="image_save_success">Imagen guardada exitosamente.</string>
+     <string name="permission_notgranted">Permisos no concedidos. La aplicación podría no funcionar correctamente.</string>
+     <string name="scanned_image">Imagen Escaneada</string>
+     <string name="doc_name_hint">Nombre del Documento</string>
+     <string name="doc_rename_hint">Nuevo nombre del Documento</string>
+     <string name="new_tag_hint">Nueva etiqueta</string>
+     <string name="document_page_count">Páginas: %d</string>
+     <string name="back_button">Botón de retroceso</string>
+     <string name="add_page">Añadir página</string>
+     <string name="add_tag">Agregar etiqueta</string>
+     <string name="set_tags">Establecer etiquetas</string>
+     <string name="ok">OK</string>
+     <string name="cancel">Cancelar</string>
+     <string name="save">Guardar</string>
+     <string name="share_file">Compartí el archivo exportado.</string>
+     <string name="rename_doc">Renombrar documento: </string>
+     <string name="export">Exportar</string>
+     <string name="edit_tags">Editar etiquetas</string>
+     <string name="rename">Renombrar</string>
+     <string name="delete">Eliminar</string>
+     <string name="doc_empty_or_missing">El documento está vacío o no existe.</string>
+     <string name="finish">Listo</string>
+     <string name="wrong_name_error">No se pudo crear el documento. Por favor
+ intentá un nombre distinto.</string>
+     <string name="adding_page">Agregando la nueva página al documento.</string>
+     <string name="create_doc">Crear Documento Nuevo</string>
+     <string name="document">Documento: </string>
+</resources>
