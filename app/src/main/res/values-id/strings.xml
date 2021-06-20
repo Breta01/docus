@@ -5,7 +5,7 @@
     <string name="image_save_success">Gambar sukses disimpan.</string>
 
     <string name="permission_notgranted">Izin tidak diberikan. Aplikasi mungkin tidak berfungsi dengan baik.</string>
-    <string name="scanned_image">Gambar Yang Dipidai</string>
+    <string name="scanned_image">Gambar Yang Dipindai</string>
     <string name="doc_name_hint">Nama Dokumen</string>
     <string name="doc_rename_hint">Nama Dokumen Baru</string>
     <string name="new_tag_hint">Tanda Baru</string>
