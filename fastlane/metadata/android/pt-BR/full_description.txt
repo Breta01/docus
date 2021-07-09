@@ -1,0 +1,3 @@
+O App permite a digitalização e organização de documentos.
+Incluindo a exportação ao PDF e o compartilhamento do arquivo.
+Tudo gratuito.
