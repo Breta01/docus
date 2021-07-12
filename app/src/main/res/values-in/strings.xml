@@ -1,0 +1,36 @@
+<resources>
+    <string name="app_name" translatable="false">Docus</string>
+
+    <string name="image_save_failed">Gagal menyimpan gambar. Silakan coba lagi.</string>
+    <string name="image_save_success">Gambar sukses disimpan.</string>
+
+    <string name="permission_notgranted">Izin tidak diberikan. Aplikasi mungkin tidak berfungsi dengan baik.</string>
+    <string name="scanned_image">Gambar Yang Dipindai</string>
+    <string name="doc_name_hint">Nama Dokumen</string>
+    <string name="doc_rename_hint">Nama Dokumen Baru</string>
+    <string name="new_tag_hint">Tanda Baru</string>
+
+    <string name="document_page_count">Halaman: %d</string>
+    <string name="back_button">Tombol belakang</string>
+    <string name="add_page">Tambahkan halaman</string>
+    <string name="add_tag">Tambahkan tanda</string>
+    <string name="set_tags">Atur Tanda</string>
+
+    <string name="ok">OK</string>
+    <string name="cancel">Batal</string>
+    <string name="save">Simpan</string>
+    <string name="share_file">Bagikan berkas yang diekspor.</string>
+    <string name="rename_doc">Ubah Nama Dokumen: </string>
+    <!-- pop-up menu on document -->
+    <string name="export">Ekspor</string>
+    <string name="edit_tags">Sunting tanda</string>
+    <string name="rename">Ubah Nama</string>
+    <string name="delete">Hapus</string>
+
+    <string name="doc_empty_or_missing">Dokumen kosong atau tidak ada.</string>
+    <string name="finish">Selesai</string>
+    <string name="wrong_name_error">Tidak bisa membuat dokumen, silakan mencoba dengan nama yang berbeda.</string>
+    <string name="adding_page">Menambahkan halaman yang baru ke dokumen.</string>
+    <string name="create_doc">Buat Dokumen Baru</string>
+    <string name="document">Dokumen: </string>
+</resources>
