@@ -23,12 +23,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.camera.core.CameraX;
 import androidx.camera.core.ImageAnalysis;
-import androidx.camera.core.ImageAnalysisConfig;
 import androidx.camera.core.ImageCapture;
-import androidx.camera.core.ImageCaptureConfig;
 import androidx.camera.core.ImageProxy;
 import androidx.camera.core.Preview;
-import androidx.camera.core.PreviewConfig;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
@@ -80,7 +77,7 @@ public class CameraFragment extends Fragment {
     public CameraFragment() {
     }
 
-    private ImageCapture.OnImageSavedListener imListener = new ImageCapture.OnImageSavedListener() {
+    private ImageCapture.OnImageSavedCallback imListener = new ImageCapture.OnImageSavedCallback() {
         @Override
         public void onImageSaved(@NonNull File file) {
             String msg = getString(R.string.image_save_success);
@@ -179,10 +176,9 @@ public class CameraFragment extends Fragment {
         viewFinder.getDisplay().getRealMetrics(metrics);
         Rational screenAspectRatio = new Rational(metrics.widthPixels, metrics.heightPixels);
 
-        PreviewConfig previewConfig = new PreviewConfig.Builder()
+        preview = new Preview.Builder()
                 .setTargetAspectRatio(screenAspectRatio)
                 .build();
-        Preview preview = new Preview(previewConfig);
 
         preview.setOnPreviewOutputUpdateListener(
                 new Preview.OnPreviewOutputUpdateListener() {
@@ -197,19 +193,16 @@ public class CameraFragment extends Fragment {
                 }
         );
 
-        ImageCaptureConfig config = new ImageCaptureConfig.Builder()
+        imageCapture = new ImageCapture.Builder()
                 .setTargetAspectRatio(screenAspectRatio)
-                .setCaptureMode(ImageCapture.CaptureMode.MIN_LATENCY)
+                .setCaptureMode(ImageCapture.CaptureMode.CAPTURE_MODE_MINIMIZE_LATENCY)
                 .build();
-        imageCapture = new ImageCapture(config);
 
-
-        ImageAnalysisConfig analyzerConfig = new ImageAnalysisConfig.Builder()
+        imageAnalyzer = new ImageAnalysis.Builder()
                 .setTargetAspectRatio(screenAspectRatio)
                 .setCallbackHandler(new Handler(analyzerThread.getLooper()))
                 .setImageReaderMode(ImageAnalysis.ImageReaderMode.ACQUIRE_LATEST_IMAGE)
                 .build();
-        imageAnalyzer = new ImageAnalysis(analyzerConfig);
         imageAnalyzer.setAnalyzer(new PageAnalyzer());
 
         CameraX.bindToLifecycle(getViewLifecycleOwner(), preview, imageCapture, imageAnalyzer);
