@@ -1,0 +1,3 @@
+Aplikasi yang berfungsi memindai dan mengorganisir dokumen.
+Termasuk ekspor ke PDF dan membagikan ke yang lainnya.
+Benar-benar gratis dan bebas.
