@@ -9,6 +9,12 @@
     android:keepScreenOn="true"
     android:theme="@style/FullscreenTheme">
 
+    <androidx.camera.view.PreviewView
+        android:id="@+id/preview_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:scaleType="fitEnd" />
+
     <Button
         android:id="@+id/button_back_home"
         style="@style/Widget.MaterialComponents.Button.TextButton.Dialog"
@@ -32,6 +38,21 @@
         app:layout_constraintStart_toStartOf="parent"
         app:srcCompat="@drawable/ic_panorama_fish_eye_black_48dp" />
 
+    <ToggleButton
+        android:id="@+id/toggle_flash"
+        android:layout_width="52dp"
+        android:layout_height="52dp"
+        android:layout_margin="24dp"
+        android:background="@drawable/ic_flash"
+        android:textOff=""
+        android:textOn=""
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.51"
+        app:layout_constraintStart_toEndOf="@+id/capture_button"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.98" />
+
     <TextureView
         android:id="@+id/view_finder"
         android:layout_width="match_parent"
@@ -45,6 +66,8 @@
     <com.bretahajek.docus.ui.PageSurface
         android:id="@+id/page_surface"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        tools:layout_editor_absoluteX="170dp"
+        tools:layout_editor_absoluteY="dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

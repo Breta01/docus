@@ -1,6 +1,8 @@
 package com.bretahajek.docus.fragments;
 
 import android.app.ActionBar;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
@@ -9,7 +11,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import android.util.Rational;
+import android.util.Size;
 import android.view.LayoutInflater;
 import android.view.TextureView;
 import android.view.View;
@@ -18,25 +20,34 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.camera.core.CameraX;
+import androidx.camera.core.Camera;
+import androidx.camera.core.CameraProvider;
+import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageAnalysis;
-import androidx.camera.core.ImageAnalysisConfig;
 import androidx.camera.core.ImageCapture;
-import androidx.camera.core.ImageCaptureConfig;
+import androidx.camera.core.ImageCaptureException;
 import androidx.camera.core.ImageProxy;
 import androidx.camera.core.Preview;
-import androidx.camera.core.PreviewConfig;
+import androidx.camera.lifecycle.ProcessCameraProvider;
+import androidx.camera.view.PreviewView;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LifecycleOwner;
 import androidx.navigation.Navigation;
 
+import com.bretahajek.docus.MainActivity;
 import com.bretahajek.docus.R;
 import com.bretahajek.docus.fragments.CameraFragmentDirections.ActionCameraToPreview;
 import com.bretahajek.docus.ocr.PageDetector;
 import com.bretahajek.docus.ui.PageSurface;
+
+import com.google.common.util.concurrent.ListenableFuture;
 
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
@@ -47,17 +58,30 @@ import org.opencv.core.Scalar;
 
 import java.io.File;
 import java.nio.ByteBuffer;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
 
 
 public class CameraFragment extends Fragment {
-    private static int IMMERSIVE_FLAG_TIMEOUT = 300;
+    private static String MY_PREFS = "flash_prefs";
+    private static String FLASH_STATUS = "flash_on";
+    private boolean isFlashOn;
 
+    SharedPreferences myPreferences;
+    SharedPreferences.Editor myEditor;
+
+    private static int IMMERSIVE_FLAG_TIMEOUT = 300;
+    private Camera cam;
     private TextureView viewFinder;
     private PageSurface pageSurface;
+    private PreviewView previewView;
     private ConstraintLayout container;
     private String documentName;
+    private Preview preview = null;
+
     private ImageCapture imageCapture = null;
     private ImageAnalysis imageAnalyzer = null;
+    private ListenableFuture<ProcessCameraProvider> cameraProviderFuture;
     private HandlerThread analyzerThread = new HandlerThread("PageAnalysis");
     private Runnable immersiveModeRunnable = new Runnable() {
         @Override
@@ -76,35 +100,32 @@ public class CameraFragment extends Fragment {
         }
     };
 
-
     public CameraFragment() {
     }
 
-    private ImageCapture.OnImageSavedListener imListener = new ImageCapture.OnImageSavedListener() {
+    private ImageCapture.OnImageSavedCallback imListener = new ImageCapture.OnImageSavedCallback() {
         @Override
-        public void onImageSaved(@NonNull File file) {
+        public void onImageSaved(@NonNull ImageCapture.OutputFileResults outputFileResults) {
             String msg = getString(R.string.image_save_success);
             Toast.makeText(
                     getActivity().getBaseContext(),
                     msg,
                     Toast.LENGTH_SHORT).show();
-            ActionCameraToPreview action = CameraFragmentDirections.actionCameraToPreview(file.getPath());
+            ActionCameraToPreview action = CameraFragmentDirections.actionCameraToPreview(outputFileResults.getSavedUri().getPath());
             action.setDocumentName(documentName);
+            toggleFlashActivity(false);
             Navigation.findNavController(
                     requireActivity(), R.id.fragment_container).navigate(action);
         }
 
         @Override
-        public void onError(
-                @NonNull ImageCapture.ImageCaptureError imageCaptureError,
-                @NonNull String message,
-                @Nullable Throwable cause) {
+        public void onError(@NonNull ImageCaptureException exception) {
             String msg = getString(R.string.image_save_failed);
             Toast.makeText(
                     getActivity().getBaseContext(),
                     msg,
                     Toast.LENGTH_SHORT).show();
-            Log.i(getString(R.string.app_name), message);
+            Log.i(getString(R.string.app_name), exception.getMessage());
             Log.e(getString(R.string.app_name), msg);
         }
     };
@@ -122,6 +143,26 @@ public class CameraFragment extends Fragment {
             );
         }
 
+        // handle when back button is pressed - mainly to turn of flash.
+        OnBackPressedCallback callback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                toggleFlashActivity(false);
+                pageSurface.pause();
+                Navigation.findNavController(requireActivity(), R.id.fragment_container).navigate(
+                        CameraFragmentDirections.actionCameraToHome()
+                );
+            }
+        };
+        requireActivity().getOnBackPressedDispatcher().addCallback(this, callback);
+
+        // store flash status
+        myPreferences = getActivity().getSharedPreferences(MY_PREFS, Context.MODE_PRIVATE);
+        myEditor = getActivity().getSharedPreferences(MY_PREFS, Context.MODE_PRIVATE).edit();
+
+        isFlashOn = myPreferences.getBoolean(FLASH_STATUS, false);
+
+        cameraProviderFuture = ProcessCameraProvider.getInstance(getActivity());
         analyzerThread.start();
     }
 
@@ -137,17 +178,28 @@ public class CameraFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         container = (ConstraintLayout) view;
         container.post(immersiveModeRunnable);
-
+        previewView = view.findViewById(R.id.preview_view);
         pageSurface = (PageSurface) container.getViewById(R.id.page_surface);
 
         viewFinder = (TextureView) container.getViewById(R.id.view_finder);
         viewFinder.post(new Runnable() {
             @Override
             public void run() {
-                buildCameraUi();
-                startCamera();
+                cameraProviderFuture.addListener(() -> {
+                    try {
+                        ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
+                        startCamera(cameraProvider);
+                        buildCameraUi();
+                    } catch (ExecutionException | InterruptedException e) {
+                        //No errors need to be handled
+                    }
+                }, ContextCompat.getMainExecutor(getContext()));
             }
         });
+    }
+
+    private void toggleFlashActivity(boolean flash){
+        cam.getCameraControl().enableTorch(flash);
     }
 
     @Override
@@ -174,45 +226,38 @@ public class CameraFragment extends Fragment {
         getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
     }
 
-    private void startCamera() {
+    private void startCamera(@NonNull ProcessCameraProvider cameraProvider) {
+        cameraProvider.unbindAll();
+
+        CameraSelector cameraSelector = new CameraSelector.Builder()
+                .requireLensFacing(CameraSelector.LENS_FACING_BACK)
+                .build();
+
+
         DisplayMetrics metrics = new DisplayMetrics();
         viewFinder.getDisplay().getRealMetrics(metrics);
-        Rational screenAspectRatio = new Rational(metrics.widthPixels, metrics.heightPixels);
+        Size screenSize = new Size(metrics.widthPixels, metrics.heightPixels);
 
-        PreviewConfig previewConfig = new PreviewConfig.Builder()
-                .setTargetAspectRatio(screenAspectRatio)
+        preview = new Preview.Builder()
+                .setTargetResolution(screenSize)
                 .build();
-        Preview preview = new Preview(previewConfig);
 
-        preview.setOnPreviewOutputUpdateListener(
-                new Preview.OnPreviewOutputUpdateListener() {
-                    @Override
-                    public void onUpdated(Preview.PreviewOutput output) {
-                        ViewGroup parent = (ViewGroup) viewFinder.getParent();
-                        parent.removeView(viewFinder);
-                        parent.addView(viewFinder, 0);
+        preview.setSurfaceProvider(previewView.getSurfaceProvider());
 
-                        viewFinder.setSurfaceTexture(output.getSurfaceTexture());
-                    }
-                }
-        );
-
-        ImageCaptureConfig config = new ImageCaptureConfig.Builder()
-                .setTargetAspectRatio(screenAspectRatio)
-                .setCaptureMode(ImageCapture.CaptureMode.MIN_LATENCY)
+        imageCapture = new ImageCapture.Builder()
+                .setTargetResolution(screenSize)
+                .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
                 .build();
-        imageCapture = new ImageCapture(config);
 
-
-        ImageAnalysisConfig analyzerConfig = new ImageAnalysisConfig.Builder()
-                .setTargetAspectRatio(screenAspectRatio)
-                .setCallbackHandler(new Handler(analyzerThread.getLooper()))
-                .setImageReaderMode(ImageAnalysis.ImageReaderMode.ACQUIRE_LATEST_IMAGE)
+        imageAnalyzer = new ImageAnalysis.Builder()
+                .setTargetResolution(screenSize)
+                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
                 .build();
-        imageAnalyzer = new ImageAnalysis(analyzerConfig);
-        imageAnalyzer.setAnalyzer(new PageAnalyzer());
 
-        CameraX.bindToLifecycle(getViewLifecycleOwner(), preview, imageCapture, imageAnalyzer);
+        imageAnalyzer.setAnalyzer(Executors.newSingleThreadExecutor(), new PageAnalyzer());
+
+        cam = cameraProvider.bindToLifecycle((LifecycleOwner) getActivity(), cameraSelector, preview, imageCapture, imageAnalyzer);
     }
 
     private void buildCameraUi() {
@@ -224,6 +269,7 @@ public class CameraFragment extends Fragment {
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                toggleFlashActivity(false);
                 pageSurface.pause();
                 Navigation.findNavController(requireActivity(), R.id.fragment_container).navigate(
                         CameraFragmentDirections.actionCameraToHome()
@@ -231,7 +277,28 @@ public class CameraFragment extends Fragment {
             }
         });
 
-        // Camere capture button
+        // Toggle flash button
+        ToggleButton toggleFlash = container.findViewById(R.id.toggle_flash);
+        toggleFlash.setChecked(isFlashOn);
+        toggleFlashActivity(isFlashOn);
+
+        toggleFlash.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if(cam.getCameraInfo().hasFlashUnit()){
+                            isFlashOn = toggleFlash.isChecked();
+                            myEditor.putBoolean(FLASH_STATUS, isFlashOn);
+                            myEditor.apply();
+                            toggleFlashActivity(isFlashOn);
+                        } else{
+                            Toast.makeText(getActivity(), "Flash not available", Toast.LENGTH_LONG).show();
+                        }
+                    }
+                }
+        );
+
+        // Camera capture button
         ImageButton captureButton = container.findViewById(R.id.capture_button);
         captureButton.setOnClickListener(
                 new View.OnClickListener() {
@@ -244,7 +311,9 @@ public class CameraFragment extends Fragment {
                                 getString(R.string.app_name),
                                 "Saving to: " + file.getAbsolutePath());
 
-                        imageCapture.takePicture(file, imListener);
+                        ImageCapture.OutputFileOptions outputOptions = new ImageCapture.OutputFileOptions.Builder(file).build();
+
+                        imageCapture.takePicture(outputOptions, ContextCompat.getMainExecutor(getActivity()), imListener);
 
                         // If possible display flash animation to indicate that photo was captured
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -277,9 +346,10 @@ public class CameraFragment extends Fragment {
         }
 
         @Override
-        public void analyze(ImageProxy image, int rotationDegrees) {
+        public void analyze(ImageProxy image) {
             if (image.getFormat() == 35 && image.getPlanes()[0].getPixelStride() == 1) {
                 Mat matImage = imageToGrayscaleMat(image);
+                int rotationDegrees = image.getImageInfo().getRotationDegrees();
                 if (rotationDegrees != 0) {
                     int rotate = -1;
                     switch (rotationDegrees) {
