@@ -252,7 +252,7 @@ public class CameraFragment extends Fragment {
         imageAnalyzer = new ImageAnalysis.Builder()
                 .setTargetResolution(screenSize)
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
+                .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_YUV_420_888)
                 .build();
 
         imageAnalyzer.setAnalyzer(Executors.newSingleThreadExecutor(), new PageAnalyzer());
@@ -378,6 +378,7 @@ public class CameraFragment extends Fragment {
 
                 pageSurface.updateCorners(relCorners.toArray());
             }
+            image.close();
         }
     }
 }

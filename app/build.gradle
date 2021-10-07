@@ -45,6 +45,7 @@ android {
     dataBinding {
         enabled true
     }
+    android.ndkVersion '21.3.6528147'
 }
 
 dependencies {
