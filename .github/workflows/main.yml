@@ -1,0 +1,29 @@
+name: Docus CI
+on:
+  - push
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clone repo 
+        uses: actions/checkout@v2
+
+      - name: set up java
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'temurin'
+          java-version: '11' # The OpenJDK version to make available on the path
+
+      - name: Setup Android SDK
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: '21.4.7075529'
+
+      - name: build
+        run: ./gradlew 
+
+      - name: build
+        run: ./gradlew build
