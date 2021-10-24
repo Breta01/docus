@@ -18,4 +18,6 @@ jobs:
           architecture: 'x64' # defaults to 'x64'
 
       - name: build
-        run: gradlew
+        run: ./gradlew 
+      - name: build
+        run: ./gradlew build
