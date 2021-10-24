@@ -1,0 +1,21 @@
+name: Docus CI
+on:
+  - push
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clone repo 
+        uses: actions/checkout@v2
+
+      - name: set up java
+        uses: joschi/setup-jdk@v2
+        with:
+          java-version: '11' # The OpenJDK version to make available on the path
+          architecture: 'x64' # defaults to 'x64'
+
+      - name: build
+        run: gradlew
